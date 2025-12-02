@@ -28,21 +28,33 @@ const ANNOUNCE_CHANNEL_ID  = "1437112719412039771";  // channel announce open/cl
 client.once(Events.ClientReady, () => {
     console.log(`Bot online sebagai ${client.user.tag}`);
 
+    // Status yang kamu mau
     const statuses = [
-        { name: "u 💗", type: 2 },          // Listening to u
-        { name: "the stars ✨", type: 3 },   // Watching the stars
-        { name: "over u 🌙", type: 0 },      // Playing over u
-        { name: "your heart 💞", type: 2 }   // Listening to your heart
+        "🌸 Cyizzie Shop - OPEN",
+        "💛 Check availability first",
+        "🎟️ Order via ticket",
+        "💌 Lihat review di channel Testimoni",
+        "✨ Premium Services Available",
+        "🪷 Nitro • Decoration • Premium Apps"
     ];
 
-    // Ganti status tiap 10 detik
+    let i = 0;
+
+    // Ganti status tiap 5 detik
     setInterval(() => {
-        const random = statuses[Math.floor(Math.random() * statuses.length)];
         client.user.setPresence({
-            activities: [random],
+            activities: [
+                {
+                    name: statuses[i],
+                    type: 0 // "Playing"
+                }
+            ],
             status: "online"
         });
-    }, 10000);
+
+        i++;
+        if (i >= statuses.length) i = 0;
+    }, 5000);
 });
 
 // ================== WELCOME + AUTOROLE ================== //
@@ -108,11 +120,11 @@ client.on(Events.MessageCreate, async (message) => {
     if (message.content.startsWith("?order")) {
         const form = `## 🧁 ──  form data akun
 
-💌 Email :
-🔑 Password :
-📦 Produk : (nitro / decoration / app premium)
-⏱️ Durasi :
-📌 Note tambahan : (opsional)`;
+💌 email :
+🔑 password :
+📦 produk : (nitro / decoration / app premium)
+⏱️ durasi :
+📌 note tambahan : (opsional)`;
 
         return message.reply(form);
     }
