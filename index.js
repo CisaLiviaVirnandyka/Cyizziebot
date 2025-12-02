@@ -1,32 +1,53 @@
+// ================== SETUP & IMPORT ================== //
 require("dotenv").config();
-const { 
-    Client, 
-    GatewayIntentBits, 
+const {
+    Client,
+    GatewayIntentBits,
     EmbedBuilder,
-    PermissionsBitField
+    PermissionsBitField,
+    Events
 } = require("discord.js");
 
+// ================== CLIENT ================== //
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildVoiceStates,
-        GatewayIntentBits.GuildMembers // biar guildMemberAdd jalan
+        GatewayIntentBits.GuildMembers
     ]
 });
 
-client.once("ready", () => {
+// ================== CONFIG ID ================== //
+const WELCOME_CHANNEL_ID   = "862261084697264149";   // channel welcome
+const AUTO_ROLE_ID         = "894948896248320003";   // role autorole
+const ANNOUNCE_CHANNEL_ID  = "1437112719412039771";  // channel announce open/close
+
+// ================== READY + CUSTOM STATUS ================== //
+client.once(Events.ClientReady, () => {
     console.log(`Bot online sebagai ${client.user.tag}`);
+
+    const statuses = [
+        { name: "u 💗", type: 2 },          // Listening to u
+        { name: "the stars ✨", type: 3 },   // Watching the stars
+        { name: "over u 🌙", type: 0 },      // Playing over u
+        { name: "your heart 💞", type: 2 }   // Listening to your heart
+    ];
+
+    // Ganti status tiap 10 detik
+    setInterval(() => {
+        const random = statuses[Math.floor(Math.random() * statuses.length)];
+        client.user.setPresence({
+            activities: [random],
+            status: "online"
+        });
+    }, 10000);
 });
 
-const WELCOME_CHANNEL_ID   = "862261084697264149";
-const AUTO_ROLE_ID         = "894948896248320003"; 
-const ANNOUNCE_CHANNEL_ID  = "1437112719412039771"; // channel announce open/close
-
-// Welcome + autorole
-client.on("guildMemberAdd", async (member) => {
-    // === AUTOROLE ===
+// ================== WELCOME + AUTOROLE ================== //
+client.on(Events.GuildMemberAdd, async (member) => {
+    // Autorole
     try {
         await member.roles.add(AUTO_ROLE_ID);
         console.log(`Autorole diberikan ke ${member.user.tag}`);
@@ -34,6 +55,7 @@ client.on("guildMemberAdd", async (member) => {
         console.error("Gagal memberi autorole:", err);
     }
 
+    // Welcome embed
     const channel = member.guild.channels.cache.get(WELCOME_CHANNEL_ID);
     if (!channel) return;
 
@@ -57,13 +79,17 @@ We hope you enjoy your stay! <33`)
         .setFooter({ text: `Member Count: ${member.guild.memberCount}` })
         .setTimestamp();
 
-    channel.send({ content: `Hi & Welc, <@${member.id}>!`, embeds: [welcomeEmbed] });
+    channel.send({
+        content: `Hi & Welc, <@${member.id}>!`,
+        embeds: [welcomeEmbed]
+    });
 });
 
-// SINGLE messageCreate event
-client.on("messageCreate", async (message) => {
+// ================== MESSAGE COMMANDS ================== //
+client.on(Events.MessageCreate, async (message) => {
     if (!message.guild || message.author.bot) return;
 
+    // simple respon
     if (message.content === "halo") {
         return message.reply("haii aku assistant cyizzie 🤍");
     }
@@ -72,12 +98,13 @@ client.on("messageCreate", async (message) => {
         return message.reply(`pong! delay: ${client.ws.ping}ms`);
     }
 
+    // test welcome
     if (message.content === "!testwelcome") {
-        client.emit("guildMemberAdd", message.member);
+        client.emit(Events.GuildMemberAdd, message.member);
         return;
     }
 
-    // Form ?order
+    // ================== FORM ORDER ================== //
     if (message.content.startsWith("?order")) {
         const form = `## 🧁 ──  form data akun
 
@@ -90,7 +117,7 @@ client.on("messageCreate", async (message) => {
         return message.reply(form);
     }
 
-    // ========== ANNOUNCE OPEN (HANYA ADMIN) ========== //
+    // ================== SHOP OPEN (ADMIN ONLY) ================== //
     if (message.content === "?open") {
         if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
             return message.reply("kamu belum punya izin buat pake command ini ✨");
@@ -116,14 +143,18 @@ client.on("messageCreate", async (message) => {
             .setColor(0xFFB6C1)
             .setTimestamp();
 
-        await channel.send({ content: "@everyone **SHOP IS NOW OPEN!**", embeds: [openEmbed] });
+        await channel.send({
+            content: "@everyone **SHOP IS NOW OPEN!**",
+            embeds: [openEmbed]
+        });
+
         if (channel.id !== message.channel.id) {
             return message.reply("udah aku announce di channel toko 💗");
         }
         return;
     }
 
-    // ========== ANNOUNCE CLOSE (HANYA ADMIN) ========== //
+    // ================== SHOP CLOSE (ADMIN ONLY) ================== //
     if (message.content === "?close") {
         if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
             return message.reply("kamu belum punya izin buat pake command ini ✨");
@@ -144,6 +175,7 @@ nanti di-respond pas toko buka lagi! ✨`
             .setTimestamp();
 
         await channel.send({ embeds: [closeEmbed] });
+
         if (channel.id !== message.channel.id) {
             return message.reply("udah aku announce kalau shop close di channel toko 🌙");
         }
@@ -151,5 +183,5 @@ nanti di-respond pas toko buka lagi! ✨`
     }
 });
 
-// LOGIN
+// ================== LOGIN ================== //
 client.login(process.env.DISCORD_TOKEN);
