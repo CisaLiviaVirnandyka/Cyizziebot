@@ -28,7 +28,6 @@ const ANNOUNCE_CHANNEL_ID  = "1437112719412039771";  // channel announce open/cl
 client.once(Events.ClientReady, () => {
     console.log(`Bot online sebagai ${client.user.tag}`);
 
-    // Status yang kamu mau
     const statuses = [
         "🌸 Cyizzie Shop - OPEN",
         "💛 Check availability first",
@@ -40,20 +39,13 @@ client.once(Events.ClientReady, () => {
 
     let i = 0;
 
-    // Ganti status tiap 5 detik
     setInterval(() => {
         client.user.setPresence({
-            activities: [
-                {
-                    name: statuses[i],
-                    type: 0 // "Playing"
-                }
-            ],
+            activities: [{ name: statuses[i], type: 0 }],
             status: "online"
         });
 
-        i++;
-        if (i >= statuses.length) i = 0;
+        i = (i + 1) % statuses.length;
     }, 5000);
 });
 
@@ -101,22 +93,14 @@ We hope you enjoy your stay! <33`)
 client.on(Events.MessageCreate, async (message) => {
     if (!message.guild || message.author.bot) return;
 
-    // simple respon
-    if (message.content === "halo") {
-        return message.reply("haii aku assistant cyizzie 🤍");
-    }
+    if (message.content === "halo") return message.reply("haii aku assistant cyizzie 🤍");
+    if (message.content === "?ping") return message.reply(`pong! delay: ${client.ws.ping}ms`);
 
-    if (message.content === "?ping") {
-        return message.reply(`pong! delay: ${client.ws.ping}ms`);
-    }
-
-    // test welcome
     if (message.content === "!testwelcome") {
         client.emit(Events.GuildMemberAdd, message.member);
         return;
     }
 
-    // ================== FORM ORDER ================== //
     if (message.content.startsWith("?order")) {
         const form = `## 🧁 ──  form data akun
 
@@ -129,71 +113,128 @@ client.on(Events.MessageCreate, async (message) => {
         return message.reply(form);
     }
 
-    // ================== SHOP OPEN (ADMIN ONLY) ================== //
+    // ================== SHOP OPEN ================== //
     if (message.content === "?open") {
-        if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+        if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator))
             return message.reply("kamu belum punya izin buat pake command ini ✨");
-        }
 
-        const channel = message.guild.channels.cache.get(ANNOUNCE_CHANNEL_ID) || message.channel;
+        const channel = message.guild.channels.cache.get(ANNOUNCE_CHANNEL_ID);
 
         const openEmbed = new EmbedBuilder()
             .setTitle("🌸・SHOP STATUS: OPEN")
-            .setDescription(
-`> Toko lagi **OPEN** sekarang 💌  
+            .setColor("#FFB6C1")
+            .setDescription(`
+> Toko lagi **OPEN** sekarang 💌  
+Silahkan order ya sayangg 🤍
 
-｡ﾟ•┈୨♡୧┈•｡ﾟ
+╭────────⋅⋅⋅༺♡༻⋅⋅⋅────────╮
+🛍 **Available Products**
+✧ Nitro Boost
+✧ Decoration
+✧ App Premium
 
-🛒 Produk:
-・ Nitro Boost
-・ Decoration  
-・ App Premium
+💳 **Payment**
+・ DANA / QRIS
 
-💳 Pembayaran:
-・ DANA / QRIS`
-            )
-            .setColor(0xFFB6C1)
+📩 **Need help or want to buy?**
+・ *Boleh DM / Recommended Open Ticket*
+╰────────⋅⋅⋅༺♡༻⋅⋅⋅────────╯
+
+✨ Feel free to ask price list anytime!
+`)
             .setTimestamp();
 
-        await channel.send({
-            content: "@everyone **SHOP IS NOW OPEN!**",
-            embeds: [openEmbed]
-        });
-
-        if (channel.id !== message.channel.id) {
-            return message.reply("udah aku announce di channel toko 💗");
-        }
+        await channel.send({ content: "@everyone **SHOP IS NOW OPEN!**", embeds: [openEmbed] });
         return;
     }
 
-    // ================== SHOP CLOSE (ADMIN ONLY) ================== //
-    if (message.content === "?close") {
-        if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-            return message.reply("kamu belum punya izin buat pake command ini ✨");
-        }
+ // ================== SHOP HOLD ================== //
+if (message.content === "?hold") {
+    if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator))
+        return message.reply("kamu belum punya izin buat pake command ini ✨");
 
-        const channel = message.guild.channels.cache.get(ANNOUNCE_CHANNEL_ID) || message.channel;
+    const channel = message.guild.channels.cache.get(ANNOUNCE_CHANNEL_ID);
 
-        const closeEmbed = new EmbedBuilder()
-            .setTitle("💤・SHOP STATUS: CLOSED")
-            .setDescription(
-`> Untuk sementara **CLOSED** dulu yaa 💤  
-Order yang sudah masuk tetap diproses, jangan khawatir 💗
+    const holdEmbed = new EmbedBuilder()
+        .setTitle("⏳・SHOP STATUS: HOLD")
+        .setColor("#F7D774")
+        .setDescription(`
+> Toko **ON HOLD** dulu yaa, sabar bentarr 🤍
 
-Kalau mau titip order, boleh kirim form dulu  
-nanti di-respond pas toko buka lagi! ✨`
-            )
-            .setColor(0x808080)
-            .setTimestamp();
+╭────────────────⋅⋅⋅༺♡༻⋅⋅⋅────────────────╮
+📌 **Reason**
+・ Admin lagi ngurus order / break sebentar
 
-        await channel.send({ embeds: [closeEmbed] });
+📨 **Want to reserve order?**
+・ Boleh kirim form dulu!
 
-        if (channel.id !== message.channel.id) {
-            return message.reply("udah aku announce kalau shop close di channel toko 🌙");
-        }
-        return;
-    }
-});
+📩 **Recommended**
+・ *DM / Open Ticket available*
+╰────────────────⋅⋅⋅༺♡༻⋅⋅⋅────────────────╯
+
+🫶 Thanks for waiting!
+`)
+        .setTimestamp();
+
+    await channel.send({ content: "@everyone **SHOP ON HOLD**", embeds: [holdEmbed] });
+    return;
+}
+
+// ================== SHOP CLOSE ================== //
+if (message.content === "?close") {
+    if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator))
+        return message.reply("kamu belum punya izin buat pake command ini ✨");
+
+    const channel = message.guild.channels.cache.get(ANNOUNCE_CHANNEL_ID);
+
+    const closeEmbed = new EmbedBuilder()
+        .setTitle("💤・SHOP STATUS: CLOSED")
+        .setColor("#808080")
+        .setDescription(`
+> Untuk sementara **CLOSED** dulu yaa 💤  
+
+╭─────────────────⋅⋅⋅༺♡༻⋅⋅⋅─────────────────────╮
+💗 **Orders already placed still being processed**
+✧ Order yang sudah masuk tetap diproses kok!
+
+📩 **Want to ask something?**
+✧ *Boleh DM / Open Ticket* dulu — nanti di-respond saat OPEN ✨
+╰─────────────────────⋅⋅⋅༺♡༻⋅⋅⋅─────────────────────╯
+
+🌙 **See you when we open again!**
+`)
+        .setTimestamp();
+
+    await channel.send({ content: "@everyone **SHOP IS CLOSED**", embeds: [closeEmbed] });
+    return;
+}
+
+// ================== CYZPAY - PAYMENT COMMAND ================== //
+if (message.content === "!cyzpay") {
+    const paymentEmbed = new EmbedBuilder()
+        .setTitle("💳・PAYMENT INFORMATION")
+        .setColor("#FFC8D9")
+        .setDescription(`
+## 🩷 PAYMENT DANA
+
+> ʚɞ ⁺ ˖🎀💭 dana : **081368819354**  
+> a.n. **Cisa Lxx Vxx**  
+> top-up from bank +1k
+
+---
+
+## 🌸 PAYMENT QRIS
+> 🌺 𖦹 qris a.n **aiyselle store**
+`)
+        .setImage("https://cdn.discordapp.com/attachments/977100232972181544/1445469196782932150/cyzpay.jpg?ex=69307598&is=692f2418&hm=9c12199b2be6e8559c7929baecae91505c9f06faf0254418ac0a01d8a63e5881&") // ganti dengan link QRIS kamu
+        .setFooter({
+            text: "🛼 note :  please send proof of payment clearly without cutting, editing & etc. thank uu 💗"
+        })
+        .setTimestamp();
+
+    return message.reply({ embeds: [paymentEmbed] });
+}
+
 
 // ================== LOGIN ================== //
 client.login(process.env.DISCORD_TOKEN);
