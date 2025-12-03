@@ -541,62 +541,124 @@ client.on(Events.InteractionCreate, async (interaction) => {
     const user  = interaction.user;
 
     // =============== CLOSE TICKET =============== //
-    if (interaction.customId === "close_ticket") {
-        const thread = interaction.channel;
+if (interaction.customId === "close_ticket") {
+    const thread = interaction.channel;
 
-        if (thread.type !== ChannelType.PublicThread && thread.type !== ChannelType.PrivateThread) {
-            return interaction.reply({ content: "Ini cuma bisa dipakai di ticket thread ✨", ephemeral: true });
-        }
-
-        await interaction.reply({
-            content: "Mengirim transcript ke DM kamu lalu menutup ticket... 🔒",
-            ephemeral: true
-        });
-
-        // Ambil semua pesan di thread (max 100, bisa ditambah kalau mau pagination)
-        const msgs = await thread.messages.fetch({ limit: 100 });
-        const sorted = Array.from(msgs.values()).sort(
-            (a, b) => a.createdTimestamp - b.createdTimestamp
-        );
-
-        let txt = `Ticket Transcript - ${thread.name} (${thread.id})\n`;
-        txt += `Guild: ${guild.name} (${guild.id})\n`;
-        txt += `User: ${user.tag} (${user.id})\n`;
-        txt += `Closed at: ${new Date().toLocaleString()}\n`;
-        txt += `----------------------------------------\n\n`;
-
-        for (const m of sorted) {
-            const time = new Date(m.createdTimestamp).toLocaleString();
-            const author = m.author ? `${m.author.tag}` : "Unknown";
-            const content = m.content || "";
-            const attach = m.attachments.size
-                ? ` [attachments: ${m.attachments.map(a => a.url).join(", ")}]`
-                : "";
-
-            txt += `[${time}] ${author}: ${content}${attach}\n`;
-        }
-
-        const buffer = Buffer.from(txt, "utf8");
-        const file = new AttachmentBuilder(buffer, {
-            name: `ticket-${thread.id}.txt`
-        });
-
-        // Kirim transcript ke DM user (kalau DM tertutup, ignore error)
-        await user.send({
-            content: `Hai! Ini transcript untuk ticket **${thread.name}** ✨`,
-            files: [file]
-        }).catch(() => {});
-
-        // Archive + lock + delete biar bisa bikin ticket baru
-        await thread.setArchived(true).catch(() => {});
-        await thread.setLocked(true).catch(() => {});
-
-        setTimeout(() => {
-            thread.delete().catch(() => {});
-        }, 1500);
-
-        return;
+    if (thread.type !== ChannelType.PublicThread && thread.type !== ChannelType.PrivateThread) {
+        return interaction.reply({ content: "Ini cuma bisa dipakai di ticket thread ✨", ephemeral: true });
     }
+
+    await interaction.reply({
+        content: "Menyusun transcript & menutup ticket... 🔒",
+        ephemeral: true
+    });
+
+    // Fetch messages
+    const msgs = await thread.messages.fetch({ limit: 100 });
+    const sorted = Array.from(msgs.values()).sort(
+        (a, b) => a.createdTimestamp - b.createdTimestamp
+    );
+
+    // TEXT TRANSCRIPT
+    let txt = `Ticket Transcript - ${thread.name} (${thread.id})\n`;
+    txt += `Guild: ${guild.name} (${guild.id})\n`;
+    txt += `Closed By: ${user.tag} (${user.id})\n`;
+    txt += `Closed At: ${new Date().toLocaleString()}\n`;
+    txt += `----------------------------------------\n\n`;
+
+    for (const m of sorted) {
+        const time = new Date(m.createdTimestamp).toLocaleString();
+        const author = m.author ? `${m.author.tag}` : "Unknown";
+        const content = m.content || "";
+        const attach = m.attachments.size
+            ? ` [attachments: ${m.attachments.map(a => a.url).join(", ")}]`
+            : "";
+
+        txt += `[${time}] ${author}: ${content}${attach}\n`;
+    }
+
+    const buffer = Buffer.from(txt, "utf8");
+    const file = new AttachmentBuilder(buffer, {
+        name: `ticket-${thread.id}.txt`
+    });
+
+    // Upload online — paste.gg
+    const axios = require("axios");
+    let onlineURL = "Unavailable";
+
+    try {
+        const res = await axios.post("https://api.paste.gg/v1/pastes", {
+            name: `Ticket-${thread.id}`,
+            description: "Cyizzie Shop Ticket Transcript",
+            files: [
+                {
+                    name: `ticket-${thread.id}.txt`,
+                    content: {
+                        format: "text",
+                        value: txt
+                    }
+                }
+            ]
+        });
+        onlineURL = res.data.result.url;
+    } catch (e) {
+        console.log("Gagal upload transcript:", e);
+    }
+
+    // Aesthetic embed
+    const openedBy = sorted[0]?.author ?? user;
+    const createdAt = Math.floor(thread.createdTimestamp / 1000);
+    const closedAt = Math.floor(Date.now() / 1000);
+
+    const embedClose = new EmbedBuilder()
+        .setColor("#FFC4D8")
+        .setAuthor({
+            name: "FrEzzFamily • Ticket Log",
+            iconURL: guild.iconURL({ size: 1024 })
+        })
+        .setTitle("🌸 Ticket Closed")
+        .addFields(
+            { name: "🔢 Ticket ID", value: `\`${thread.id}\``, inline: true },
+            { name: "🟢 Opened By", value: `<@${openedBy.id}>`, inline: true },
+            { name: "🔴 Closed By", value: `<@${user.id}>`, inline: true },
+            { name: "🕒 Open Time", value: `<t:${createdAt}:f>`, inline: true },
+            { name: "🟣 Claimed By", value: `Not claimed`, inline: true },
+            { name: "📘 Reason", value: "No reason specified" }
+        )
+        .setFooter({ text: "Cyizzie Shop — soft pink aesthetic ♡" })
+        .setTimestamp();
+
+    // Buttons
+    const rowButtons = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setStyle(ButtonStyle.Link)
+            .setLabel("📄 View Online Transcript")
+            .setURL(onlineURL),
+
+        new ButtonBuilder()
+            .setStyle(ButtonStyle.Link)
+            .setLabel("🔗 View Thread")
+            .setURL(`https://discord.com/channels/${guild.id}/${thread.id}`)
+    );
+
+    // Send DM to user
+    await user.send({
+        content: "haii, ini recap ticket kamu yaa ✨",
+        embeds: [embedClose],
+        files: [file],
+        components: [rowButtons]
+    }).catch(() => {});
+
+    // Archive + lock + delete
+    await thread.setArchived(true).catch(() => {});
+    await thread.setLocked(true).catch(() => {});
+
+    setTimeout(() => {
+        thread.delete().catch(() => {});
+    }, 1500);
+
+    return;
+}
 
     // =============== CREATE TICKET (buy / ask / custom) =============== //
     if (!["buy", "ask", "custom"].includes(interaction.customId)) return;
