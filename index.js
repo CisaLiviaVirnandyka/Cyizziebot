@@ -119,7 +119,7 @@ client.on(Events.MessageCreate, async (message) => {
 ✧ Nama:
 ✧ Nomor WhatsApp:
 ✧ Merk & Tipe Perangkat:
-Lokasi:
+✧ Lokasi:
 ✧ Jenis Plan : (1P1U / 1P2U / Private / Semi)
 ✧ Durasi:
 ✧ Catatan Tambahan (opsional):`;
