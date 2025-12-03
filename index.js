@@ -112,10 +112,40 @@ client.on(Events.MessageCreate, async (message) => {
         return;
     }
 
+ // ================== FORM NETFLIX ================== //
+    if (message.content === "?formnet") {
+        const formnet = `**NETFLIX ORDER FORM**
+ㅤ
+✧ Nama:
+✧ Nomor WhatsApp:
+✧ Merk & Tipe Perangkat:
+Lokasi:
+✧ Jenis Plan : (1P1U / 1P2U / Private / Semi)
+✧ Durasi:
+✧ Catatan Tambahan (opsional):`;
+
+        return message.reply(formnet);
+    }
+
+    // ================== FORM APLIKASI / PREMIUM APPS ================== //
+    if (message.content === "?formapk") {
+        const formapk = `**PREMIUM APPS ORDER FORM**
+ㅤ
+✧ Nama:
+✧ Nomor WhatsApp:
+✧ Tanggal Order:
+✧ Durasi:
+✧ Email & Password:
+✧ Metode Pembayaran : (DANA / QRIS)
+✧ Catatan Tambahan (opsional):`;
+
+        return message.reply(formapk);
+    }
+
     // form order
     if (message.content.startsWith("?form")) {
         const form = `## 🧁 ──  form data akun
-
+ㅤ
 💌 email :
 🔑 password :
 📦 produk : (nitro / decoration / app premium)
@@ -182,9 +212,7 @@ client.on(Events.MessageCreate, async (message) => {
 if (message.content === "?pl" || message.content === "?cpl") {
     const plEmbed = new EmbedBuilder()
         .setTitle("🌷💗 AiySelle’s Store — Price List App Premium")
-        .setColor(0xFFC0DC)
         .setDescription(
-            "Pricelist cute & aesthetic biar enak dibaca pas kamu share ke buyer 💗🎀\n" +
             "Silakan cek kategori aplikasi di bawah dan pilih yang kamu mau.\n" +
             "Kalau bingung, boleh tanya dulu / open ticket yaa 🌸\n" +
             "\u200B"
@@ -243,7 +271,8 @@ if (message.content === "?pl" || message.content === "?cpl") {
                     "• DrakorID 1b — 8k\n" +
                     "• DrakorID 3b — 12k\n" +
                     "• DrakorID 6b — 18k\n" +
-                    "• DrakorID 12b — 25k\n\n"
+                    "• DrakorID 12b — 25k\n\n"+
+                    "\u200B"
             },
             {
                 name: "🎀 NETFLIX",
@@ -322,7 +351,7 @@ if (message.content === "?pl" || message.content === "?cpl") {
                     "• Wattpad 12b — 15k"
             }
         )
-        .setFooter({ text: "Cyizzie Shop • Aesthetic Pink Pricelist" })
+        .setFooter({ text: "Cyizzie Shop • App Premium Pricelist" })
         .setTimestamp();
 
     return message.reply({ embeds: [plEmbed] });
@@ -378,10 +407,11 @@ Silakan order ya 🤍
 > Toko lagi **ON HOLD** dulu yaa 🤍
 
 📌 **Reason**
-・ Admin lagi ngurus order / break sebentar
+・ Admin lagi ada kerjaan bentar / lagi break ✨
 
 📨 **Want to reserve order?**
-・ Boleh kirim form dulu, send ke → <#1443163855042641921> nanti diproses pas OPEN lagi 🤍
+・ Boleh kirim form dulu, send ke → <#1443163855042641921> nanti diproses langsung saat OPEN lagi 🤍
+
 `)
             .setTimestamp();
 
