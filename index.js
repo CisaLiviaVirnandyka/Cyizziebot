@@ -5,7 +5,12 @@ const {
     GatewayIntentBits,
     EmbedBuilder,
     PermissionsBitField,
-    Events
+    Events,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    ChannelType,
+    AttachmentBuilder
 } = require("discord.js");
 
 // ================== CLIENT ================== //
@@ -23,6 +28,10 @@ const client = new Client({
 const WELCOME_CHANNEL_ID   = "862261084697264149";   // channel welcome
 const AUTO_ROLE_ID         = "894948896248320003";   // role autorole
 const ANNOUNCE_CHANNEL_ID  = "1437112719412039771";  // channel announce open/close
+const TICKET_CATEGORY_ID   = "1443163855042641921";   // <-- ganti dengan ID kategori ticket
+const TICKET_BASE_CHANNEL = "1443163855042641921"; // tempat semua thread dibuat
+const STAFF_ROLE_ID        = "902169418962985010";   // role yang harus ikut di ticket
+
 
 // ================== READY + CUSTOM STATUS ================== //
 client.once(Events.ClientReady, () => {
@@ -93,15 +102,18 @@ We hope you enjoy your stay! <33`)
 client.on(Events.MessageCreate, async (message) => {
     if (!message.guild || message.author.bot) return;
 
+    // simple reply
     if (message.content === "halo") return message.reply("haii aku assistant cyizzie 🤍");
     if (message.content === "?ping") return message.reply(`pong! delay: ${client.ws.ping}ms`);
 
+    // test welcome
     if (message.content === "!testwelcome") {
         client.emit(Events.GuildMemberAdd, message.member);
         return;
     }
 
-    if (message.content.startsWith("?order")) {
+    // form order
+    if (message.content.startsWith("?form")) {
         const form = `## 🧁 ──  form data akun
 
 💌 email :
@@ -113,21 +125,227 @@ client.on(Events.MessageCreate, async (message) => {
         return message.reply(form);
     }
 
+    // ================== PAYMENT INFO (!cyzpay) ================== //
+    if (message.content === "?cpay") {
+
+        // cuma ADMIN yang bisa pake
+        if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+            return message.reply("kamu belum punya izin buat pake command ini ✨");
+        }
+
+        const payEmbed = new EmbedBuilder()
+            .setTitle("💳 PAYMENT INFO")
+            .setColor(0xFFC0CB)
+            .addFields(
+                {
+                    name: "PAYMENT DANA",
+                    value:
+                        "ʚɞ ⁺ ˖ 🎀💭DANA : **081368819354**\n" +
+                        "an. Cisa Lxx Vxx\n" +
+                        "_top-up from bank +1k_"
+                },
+                {
+                    name: "PAYMENT QRIS",
+                    value:
+                        "🪷 ʚ QRISֹ a.n **aiyselle store**\n" +
+                        "Silakan scan QR di bawah ini untuk pembayaran via QRIS."
+                }
+            )
+            // ganti URL di bawah ini dengan link gambar QRIS kamu
+            .setImage("https://cdn.discordapp.com/attachments/977100232972181544/1445469196782932150/cyzpay.jpg?ex=69307598&is=692f2418&hm=9c12199b2be6e8559c7929baecae91505c9f06faf0254418ac0a01d8a63e5881&")
+            .setFooter({
+                text:
+                    "🛼 note :  please send proof of payment clearly without cutting, editing & etc. thank uu 💗"
+            })
+            .setTimestamp();
+
+        return message.reply({ embeds: [payEmbed] });
+    }
+
+     // ================== TICKET PANEL COMMAND ================== //
+    if (message.content === "?ticketpanel") {
+        const ticketEmbed = new EmbedBuilder()
+            .setTitle("🎟️・Open a Ticket")
+            .setDescription("Silakan pilih kebutuhan kamu di bawah ini ✨\nPrefer DM allowed / recommended ticket 💌")
+            .setColor("#FFC0DC");
+
+        const buttons = new ActionRowBuilder().addComponents(
+            new ButtonBuilder().setCustomId("buy").setLabel("Buy Product").setStyle(ButtonStyle.Primary).setEmoji("🛒"),
+            new ButtonBuilder().setCustomId("ask").setLabel("Ask").setStyle(ButtonStyle.Success).setEmoji("❓"),
+            new ButtonBuilder().setCustomId("custom").setLabel("Custom Req").setStyle(ButtonStyle.Secondary).setEmoji("📦")
+        );
+
+        return message.channel.send({ embeds: [ticketEmbed], components: [buttons] });
+    }
+
+    // ================== PRICE LIST (?pl / ?cpl) ================== //
+if (message.content === "?pl" || message.content === "?cpl") {
+    const plEmbed = new EmbedBuilder()
+        .setTitle("🌷💗 AiySelle’s Store — Price List App Premium")
+        .setColor(0xFFC0DC)
+        .setDescription(
+            "Pricelist cute & aesthetic biar enak dibaca pas kamu share ke buyer 💗🎀\n" +
+            "Silakan cek kategori aplikasi di bawah dan pilih yang kamu mau.\n" +
+            "Kalau bingung, boleh tanya dulu / open ticket yaa 🌸\n" +
+            "\u200B"
+        )
+        .addFields(
+            {
+                name: "🍓✨ STREAMING APPS",
+                value:
+                    "• Catchplay 1b — 10k\n" +
+                    "• Catchplay 6b — 18k\n" +
+                    "• Catchplay 12b — 25k\n\n" +
+
+                    "• MovieBox 1b — 12k\n" +
+                    "• MovieBox 3b — 20k\n" +
+                    "• MovieBox 12b — 30k\n\n" +
+
+                    "• Sunshiroll 12b — 20k\n\n" +
+
+                    "• Prime Video share 1b — 10k\n" +
+                    "• Prime share (2u) 1b — 13k\n" +
+                    "• Prime private 1b — 20k\n\n" +
+
+                    "• Fizzo 1b — 10k\n" +
+                    "• Fizzo 6b — 18k\n" +
+                    "• Fizzo 12b — 22k\n\n" +
+
+                    "• Vidio Platinum 12b — 15k (TV only)\n" +
+                    "• Vidio share 2u1b — 22k\n" +
+                    "• Vidio private 1b — 40k\n\n" +
+
+                    "• Crunchyroll 12b — 15k\n\n" +
+
+                    "• HBO/MAX standar 1b — 20k\n" +
+                    "• HBO/MAX ultimate 1b — 22k\n\n" +
+
+                    "• WeTV 5u1b — 12k\n" +
+                    "• WeTV 3u1b — 20k\n\n" +
+
+                    "• Bstation 1b — 10k\n" +
+                    "• Bstation 12b — 20k\n\n" +
+
+                    "• IQIYI standar 1b — 10k\n" +
+                    "• IQIYI premium 1b — 13k\n" +
+                    "• IQIYI premium 3b — 20k\n" +
+                    "• IQIYI premium 12b — 30k\n\n" +
+
+                    "• Youku 1b — 10k\n" +
+                    "• Youku 3b — 20k\n" +
+                    "• Youku 12b — 30k\n\n" +
+
+                    "• VIU anlim 1b — 8k\n" +
+                    "• VIU anlim 6b — 12k\n" +
+                    "• VIU anlim 12b — 15k\n" +
+                    "• VIU anlim lifetime — 20k\n\n" +
+
+                    "• DrakorID 1b — 8k\n" +
+                    "• DrakorID 3b — 12k\n" +
+                    "• DrakorID 6b — 18k\n" +
+                    "• DrakorID 12b — 25k\n\n"
+            },
+            {
+                name: "🎀 NETFLIX",
+                value:
+                    "• **1P1U**\n" +
+                    "   1h — 6k\n" +
+                    "   3h — 12k\n" +
+                    "   7h — 13k\n" +
+                    "   1b — 30k\n" +
+                    "   2b — 60k\n\n" +
+
+                    "• **1P2U**\n" +
+                    "   1h — 5k\n" +
+                    "   3h — 9k\n" +
+                    "   7h — 12k\n" +
+                    "   1b — 22k\n\n" +
+
+                    "• Private 7h — 45k\n" +
+                    "• Semi Private 1b — 40k\n\n"+
+                    "\u200B"
+            },
+            {
+                name: "💗🎀 EDITING APPS",
+                value:
+                    "• Picsart private 1b — 20k\n" +
+                    "• Picsart share 1b — 10k\n\n" +
+
+                    "• CapCut share 1b — 12k\n" +
+                    "• CapCut private 1b — 22k\n" +
+                    "• CapCut private 7d — 10k\n" +
+                    "• CapCut share 7d — 7k\n\n" +
+
+                    "• VSCO 12b — 5k\n" +
+                    "• Polar 12b — 7k\n\n" +
+
+                    "• CamScanner 1b — 10k\n" +
+                    "• CamScanner 12b — 20k\n\n" +
+
+                    "• Lightroom 12b — 15k\n" +
+                    "• IbisPaintX 12b — 15k\n\n" +
+
+                    "• Canva member 1b — 7k\n" +
+                    "• Canva EDU 6b — 15k\n" +
+                    "• Canva lifetime gar 6b — 25k\n\n" +
+
+                    "• Alight Motion private 6b — 10k\n" +
+                    "• Alight Motion share 12b — 10k\n\n" +
+
+                    "• OldRoll Lifetime — 20k\n\n"+
+                    "\u200B"
+            },
+            {
+                name: "🌸✨ OTHER APPS",
+                value:
+                    "• Perplexity private 1b (fullgar) — 22k\n" +
+                    "• Perplexity private 1b (nogar) — 12k\n\n" +
+
+                    "• ChatGPT Plus private 1b — 25k\n" +
+                    "• ChatGPT share 1b — 20k\n\n" +
+
+                    "• Apple Music 1b — 10k\n" +
+                    "• Apple Music head 1b — 15k\n\n" +
+
+                    "• Spotify 1b — 35k\n" +
+                    "• Spotify 2b — 35k\n\n" +
+
+                    "• Zoom 14d — 8k\n" +
+                    "• Zoom 1b — 15k\n\n" +
+
+                    "• Scribd private 1b — 10k\n\n" +
+
+                    "• Grammarly share 1b — 15k\n" +
+                    "• Quillbot share 1b — 7k\n" +
+                    "• Quillbot private 1b — 29k\n\n" +
+
+                    "• Wattpad 12b — 15k"
+            }
+        )
+        .setFooter({ text: "Cyizzie Shop • Aesthetic Pink Pricelist" })
+        .setTimestamp();
+
+    return message.reply({ embeds: [plEmbed] });
+}
+
+});
+
     // ================== SHOP OPEN ================== //
+    client.on(Events.MessageCreate, async (message) => {
     if (message.content === "?open") {
         if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator))
             return message.reply("kamu belum punya izin buat pake command ini ✨");
 
         const channel = message.guild.channels.cache.get(ANNOUNCE_CHANNEL_ID);
+        if (!channel) return message.reply("Channel announce belum di-set dengan benar.");
 
         const openEmbed = new EmbedBuilder()
             .setTitle("🌸・SHOP STATUS: OPEN")
             .setColor("#FFB6C1")
             .setDescription(`
 > Toko lagi **OPEN** sekarang 💌  
-Silahkan order ya sayangg 🤍
+Silakan order ya 🤍
 
-╭────────⋅⋅⋅༺♡༻⋅⋅⋅────────╮
 🛍 **Available Products**
 ✧ Nitro Boost
 ✧ Decoration
@@ -137,10 +355,7 @@ Silahkan order ya sayangg 🤍
 ・ DANA / QRIS
 
 📩 **Need help or want to buy?**
-・ *Boleh DM / Recommended Open Ticket*
-╰────────⋅⋅⋅༺♡༻⋅⋅⋅────────╯
-
-✨ Feel free to ask price list anytime!
+・ *DM / Open Ticket → <#1443163855042641921>*
 `)
             .setTimestamp();
 
@@ -148,93 +363,276 @@ Silahkan order ya sayangg 🤍
         return;
     }
 
- // ================== SHOP HOLD ================== //
-if (message.content === "?hold") {
-    if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator))
-        return message.reply("kamu belum punya izin buat pake command ini ✨");
+    // ================== SHOP HOLD ================== //
+    if (message.content === "?hold") {
+        if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator))
+            return message.reply("kamu belum punya izin buat pake command ini ✨");
 
-    const channel = message.guild.channels.cache.get(ANNOUNCE_CHANNEL_ID);
+        const channel = message.guild.channels.cache.get(ANNOUNCE_CHANNEL_ID);
+        if (!channel) return message.reply("Channel announce belum di-set dengan benar.");
 
-    const holdEmbed = new EmbedBuilder()
-        .setTitle("⏳・SHOP STATUS: HOLD")
-        .setColor("#F7D774")
-        .setDescription(`
-> Toko **ON HOLD** dulu yaa, sabar bentarr 🤍
+        const holdEmbed = new EmbedBuilder()
+            .setTitle("⏳・SHOP STATUS: HOLD")
+            .setColor("#F7D774")
+            .setDescription(`
+> Toko lagi **ON HOLD** dulu yaa 🤍
 
-╭────────────────⋅⋅⋅༺♡༻⋅⋅⋅────────────────╮
 📌 **Reason**
 ・ Admin lagi ngurus order / break sebentar
 
 📨 **Want to reserve order?**
-・ Boleh kirim form dulu!
-
-📩 **Recommended**
-・ *DM / Open Ticket available*
-╰────────────────⋅⋅⋅༺♡༻⋅⋅⋅────────────────╯
-
-🫶 Thanks for waiting!
+・ Boleh kirim form dulu, send ke → <#1443163855042641921> nanti diproses pas OPEN lagi 🤍
 `)
-        .setTimestamp();
+            .setTimestamp();
 
-    await channel.send({ content: "@everyone **SHOP ON HOLD**", embeds: [holdEmbed] });
-    return;
-}
+        await channel.send({ content: "@everyone **SHOP ON HOLD**", embeds: [holdEmbed] });
+        return;
+    }
 
-// ================== SHOP CLOSE ================== //
-if (message.content === "?close") {
-    if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator))
-        return message.reply("kamu belum punya izin buat pake command ini ✨");
+    // ================== SHOP CLOSE ================== //
+    if (message.content === "?close") {
+        if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator))
+            return message.reply("kamu belum punya izin buat pake command ini ✨");
 
-    const channel = message.guild.channels.cache.get(ANNOUNCE_CHANNEL_ID);
+        const channel = message.guild.channels.cache.get(ANNOUNCE_CHANNEL_ID);
+        if (!channel) return message.reply("Channel announce belum di-set dengan benar.");
 
-    const closeEmbed = new EmbedBuilder()
-        .setTitle("💤・SHOP STATUS: CLOSED")
-        .setColor("#808080")
-        .setDescription(`
+        const closeEmbed = new EmbedBuilder()
+            .setTitle("💤・SHOP STATUS: CLOSED")
+            .setColor("#d72323")
+            .setDescription(`
 > Untuk sementara **CLOSED** dulu yaa 💤  
 
-╭─────────────────⋅⋅⋅༺♡༻⋅⋅⋅─────────────────────╮
 💗 **Orders already placed still being processed**
 ✧ Order yang sudah masuk tetap diproses kok!
 
 📩 **Want to ask something?**
 ✧ *Boleh DM / Open Ticket* dulu — nanti di-respond saat OPEN ✨
-╰─────────────────────⋅⋅⋅༺♡༻⋅⋅⋅─────────────────────╯
 
-🌙 **See you when we open again!**
+>🌙 See you when we open again!
 `)
-        .setTimestamp();
+            .setTimestamp();
 
-    await channel.send({ content: "@everyone **SHOP IS CLOSED**", embeds: [closeEmbed] });
-    return;
-}
+        await channel.send({ content: "@everyone **SHOP IS CLOSED**", embeds: [closeEmbed] });
+        return;
+    }
 
-// ================== CYZPAY - PAYMENT COMMAND ================== //
-if (message.content === "!cyzpay") {
-    const paymentEmbed = new EmbedBuilder()
-        .setTitle("💳・PAYMENT INFORMATION")
-        .setColor("#FFC8D9")
-        .setDescription(`
-## 🩷 PAYMENT DANA
+    // ---------- STAFF TOOLS (HANYA DI TICKET THREAD) ---------- //
+    if (message.content === "?wait") {
 
-> ʚɞ ⁺ ˖🎀💭 dana : **081368819354**  
-> a.n. **Cisa Lxx Vxx**  
-> top-up from bank +1k
+         const isStaff = message.member.roles.cache.has(STAFF_ROLE_ID);
 
----
+    const inTicketThread =
+        message.channel.type === ChannelType.PrivateThread ||
+        message.channel.type === ChannelType.PublicThread;
+        if (!isStaff)
+            return message.reply("command ini khusus **staff** ✨");
+        if (!inTicketThread)
+            return message.reply("command ini cuma boleh dipakai di **ticket thread** ✨");
 
-## 🌸 PAYMENT QRIS
-> 🌺 𖦹 qris a.n **aiyselle store**
+        const embed = new EmbedBuilder()
+            .setTitle("⏳・Order Status: On Process")
+            .setColor("#F7D774")
+            .setDescription(`
+Order kamu lagi **diproses** yaa 🤍  
+
+📌 **Info penting**
+・ Mohon standby, terutama kalau order Nitro (perlu verifikasi akun)
+・ Jangan ganti email / password dulu sampai selesai
+・ Cek ticket ini secara berkala untuk update ✨
 `)
-        .setImage("https://cdn.discordapp.com/attachments/977100232972181544/1445469196782932150/cyzpay.jpg?ex=69307598&is=692f2418&hm=9c12199b2be6e8559c7929baecae91505c9f06faf0254418ac0a01d8a63e5881&") // ganti dengan link QRIS kamu
-        .setFooter({
-            text: "🛼 note :  please send proof of payment clearly without cutting, editing & etc. thank uu 💗"
-        })
-        .setTimestamp();
+            .setTimestamp();
 
-    return message.reply({ embeds: [paymentEmbed] });
-}
+        return message.channel.send({ embeds: [embed] });
+    }
 
+    if (message.content === "?proses") {
+
+         const isStaff = message.member.roles.cache.has(STAFF_ROLE_ID);
+
+    const inTicketThread =
+        message.channel.type === ChannelType.PrivateThread ||
+        message.channel.type === ChannelType.PublicThread;
+
+        if (!isStaff)
+            return message.reply("command ini khusus **staff** ✨");
+        if (!inTicketThread)
+            return message.reply("command ini cuma boleh dipakai di **ticket thread** ✨");
+
+        const embed = new EmbedBuilder()
+            .setTitle("🛠️・ORDER STATUS: IN PROCESS")
+            .setColor("#03A9F4")
+            .setDescription("Order kamu lagi **dikerjakan** yaa 💗\nMohon ditunggu sebentar.")
+            .setFooter({ text: `Updated by ${message.author.tag}` })
+            .setTimestamp();
+
+        return message.channel.send({ embeds: [embed] });
+    }
+
+    if (message.content === "?done") {
+
+         const isStaff = message.member.roles.cache.has(STAFF_ROLE_ID);
+
+    const inTicketThread =
+        message.channel.type === ChannelType.PrivateThread ||
+        message.channel.type === ChannelType.PublicThread;
+
+        if (!isStaff)
+            return message.reply("command ini khusus **staff** ✨");
+        if (!inTicketThread)
+            return message.reply("command ini cuma boleh dipakai di **ticket thread** ✨");
+
+        const embed = new EmbedBuilder()
+            .setTitle("✅・Order Selesai")
+            .setColor("#A3E635")
+            .setDescription(`
+Order kamu sudah **SELESAI** 🧾  
+Terima kasih sudah belanja di **Cyizzie Shop** 🤍  
+
+💌 **Testimoni**
+Silakan kirim testi di <#1437113270598242406>  
+wajib pakai **screenshot produk** ✨
+
+<a:PinkRightArrowBounce:1444894009435881524> Ga testi dalam 24 jam setelah produk diterima, **no garansi**  
+<a:PinkRightArrowBounce:1444894009435881524> Testi **wajib pakai screenshot** product  
+<a:PinkRightArrowBounce:1444894009435881524> Leave server = **garansi void / hangus**
+`)
+            .setTimestamp();
+
+        return message.channel.send({ embeds: [embed] });
+    }
+});
+
+// ================== BUTTON INTERACTION (TICKET + CLOSE + TRANSCRIPT) ================== //
+client.on(Events.InteractionCreate, async (interaction) => {
+    if (!interaction.isButton()) return;
+
+    const guild = interaction.guild;
+    const user  = interaction.user;
+
+    // =============== CLOSE TICKET =============== //
+    if (interaction.customId === "close_ticket") {
+        const thread = interaction.channel;
+
+        if (thread.type !== ChannelType.PublicThread && thread.type !== ChannelType.PrivateThread) {
+            return interaction.reply({ content: "Ini cuma bisa dipakai di ticket thread ✨", ephemeral: true });
+        }
+
+        await interaction.reply({
+            content: "Mengirim transcript ke DM kamu lalu menutup ticket... 🔒",
+            ephemeral: true
+        });
+
+        // Ambil semua pesan di thread (max 100, bisa ditambah kalau mau pagination)
+        const msgs = await thread.messages.fetch({ limit: 100 });
+        const sorted = Array.from(msgs.values()).sort(
+            (a, b) => a.createdTimestamp - b.createdTimestamp
+        );
+
+        let txt = `Ticket Transcript - ${thread.name} (${thread.id})\n`;
+        txt += `Guild: ${guild.name} (${guild.id})\n`;
+        txt += `User: ${user.tag} (${user.id})\n`;
+        txt += `Closed at: ${new Date().toLocaleString()}\n`;
+        txt += `----------------------------------------\n\n`;
+
+        for (const m of sorted) {
+            const time = new Date(m.createdTimestamp).toLocaleString();
+            const author = m.author ? `${m.author.tag}` : "Unknown";
+            const content = m.content || "";
+            const attach = m.attachments.size
+                ? ` [attachments: ${m.attachments.map(a => a.url).join(", ")}]`
+                : "";
+
+            txt += `[${time}] ${author}: ${content}${attach}\n`;
+        }
+
+        const buffer = Buffer.from(txt, "utf8");
+        const file = new AttachmentBuilder(buffer, {
+            name: `ticket-${thread.id}.txt`
+        });
+
+        // Kirim transcript ke DM user (kalau DM tertutup, ignore error)
+        await user.send({
+            content: `Hai! Ini transcript untuk ticket **${thread.name}** ✨`,
+            files: [file]
+        }).catch(() => {});
+
+        // Archive + lock + delete biar bisa bikin ticket baru
+        await thread.setArchived(true).catch(() => {});
+        await thread.setLocked(true).catch(() => {});
+
+        setTimeout(() => {
+            thread.delete().catch(() => {});
+        }, 1500);
+
+        return;
+    }
+
+    // =============== CREATE TICKET (buy / ask / custom) =============== //
+    if (!["buy", "ask", "custom"].includes(interaction.customId)) return;
+
+    const ticketBase = guild.channels.cache.get(TICKET_BASE_CHANNEL);
+    if (!ticketBase) {
+        return interaction.reply({
+            content: "Channel ticket base tidak ditemukan, cek ID!",
+            ephemeral: true
+        });
+    }
+
+    const ticketName = `ticket-${user.username}`; // username tanpa di-edit
+
+    // Cek apakah masih ada thread dengan nama itu yang BELUM ke-delete
+    const existing = ticketBase.threads.cache.find(
+        t => t.name === ticketName && !t.archived
+    );
+    if (existing) {
+        return interaction.reply({
+            content: "kamu sudah punya ticket aktif ✨",
+            ephemeral: true
+        });
+    }
+
+    // Create thread baru
+    const thread = await ticketBase.threads.create({
+        name: ticketName,
+        autoArchiveDuration: 1440, // 24 jam
+        reason: "Ticket created"
+    });
+
+    // Hapus pesan system otomatis (kalau ada)
+    try {
+        const systemMsg = await ticketBase.messages.fetch({ limit: 1 });
+        systemMsg.first()?.delete().catch(() => {});
+    } catch {}
+
+    // Add user ke thread
+    await thread.members.add(user.id).catch(() => {});
+
+    await interaction.reply({
+        content: `Ticket berhasil dibuat → <#${thread.id}>`,
+        ephemeral: true
+    });
+
+    const openEmbed = new EmbedBuilder()
+        .setTitle("🎟️ Ticket Created")
+        .setDescription(`Hai <@${user.id}>! Makasii sudah buka ticket ✨\nAdmin segera respon yaa 💗`)
+        .addFields({ name: "Ticket Type", value: `\`${interaction.customId}\`` })
+        .setColor("#FF91C9");
+
+    const closeBtn = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId("close_ticket")
+            .setLabel("Close Ticket")
+            .setStyle(ButtonStyle.Danger)
+            .setEmoji("🔒")
+    );
+
+        await thread.send({
+        content: `<@${user.id}> <@&${STAFF_ROLE_ID}>`,
+        embeds: [openEmbed],
+        components: [closeBtn]
+    });
+});
 
 // ================== LOGIN ================== //
 client.login(process.env.DISCORD_TOKEN);
