@@ -10,9 +10,10 @@ const {
     ButtonBuilder,
     ButtonStyle,
     ChannelType,
-    AttachmentBuilder
+    AttachmentBuilder,
+    StringSelectMenuBuilder
 } = require("discord.js");
-const axios = require("axios"); // ⬅️ pindah ke sini
+const axios = require("axios");
 
 // ================== CLIENT ================== //
 const client = new Client({
@@ -26,13 +27,12 @@ const client = new Client({
 });
 
 // ================== CONFIG ID ================== //
-const WELCOME_CHANNEL_ID   = "862261084697264149";   // channel welcome
-const AUTO_ROLE_ID         = "894948896248320003";   // role autorole
-const ANNOUNCE_CHANNEL_ID  = "1437112719412039771";  // channel announce open/close
-const TICKET_CATEGORY_ID   = "1443163855042641921";   // <-- ganti dengan ID kategori ticket
-const TICKET_BASE_CHANNEL = "1443163855042641921"; // tempat semua thread dibuat
-const STAFF_ROLE_ID        = "902169418962985010";   // role yang harus ikut di ticket
-
+const WELCOME_CHANNEL_ID   = "862261084697264149";
+const AUTO_ROLE_ID         = "894948896248320003";
+const ANNOUNCE_CHANNEL_ID  = "1437112719412039771";
+const TICKET_CATEGORY_ID   = "1443163855042641921";
+const TICKET_BASE_CHANNEL  = "1443163855042641921";
+const STAFF_ROLE_ID        = "902169418962985010";
 
 // ================== READY + CUSTOM STATUS ================== //
 client.once(Events.ClientReady, () => {
@@ -48,20 +48,17 @@ client.once(Events.ClientReady, () => {
     ];
 
     let i = 0;
-
     setInterval(() => {
         client.user.setPresence({
             activities: [{ name: statuses[i], type: 0 }],
             status: "online"
         });
-
         i = (i + 1) % statuses.length;
     }, 5000);
 });
 
 // ================== WELCOME + AUTOROLE ================== //
 client.on(Events.GuildMemberAdd, async (member) => {
-    // Autorole
     try {
         await member.roles.add(AUTO_ROLE_ID);
         console.log(`Autorole diberikan ke ${member.user.tag}`);
@@ -69,7 +66,6 @@ client.on(Events.GuildMemberAdd, async (member) => {
         console.error("Gagal memberi autorole:", err);
     }
 
-    // Welcome embed
     const channel = member.guild.channels.cache.get(WELCOME_CHANNEL_ID);
     if (!channel) return;
 
@@ -113,9 +109,9 @@ client.on(Events.MessageCreate, async (message) => {
         return;
     }
 
- // ================== FORM NETFLIX ================== //
+    // ================== FORM NETFLIX ================== //
     if (message.content === "?formnet") {
-        const formnet = `**NETFLIX ORDER FORM**
+        return message.reply(`**NETFLIX ORDER FORM**
 ㅤ
 ✧ Nama:
 ✧ Nomor WhatsApp:
@@ -123,14 +119,12 @@ client.on(Events.MessageCreate, async (message) => {
 ✧ Lokasi:
 ✧ Jenis Plan : (1P1U / 1P2U / Private / Semi)
 ✧ Durasi:
-✧ Catatan Tambahan (opsional):`;
-
-        return message.reply(formnet);
+✧ Catatan Tambahan (opsional):`);
     }
 
     // ================== FORM APLIKASI / PREMIUM APPS ================== //
     if (message.content === "?formapk") {
-        const formapk = `**PREMIUM APPS ORDER FORM**
+        return message.reply(`**PREMIUM APPS ORDER FORM**
 ㅤ
 ✧ Nama:
 ✧ Nomor WhatsApp:
@@ -138,28 +132,22 @@ client.on(Events.MessageCreate, async (message) => {
 ✧ Durasi:
 ✧ Email & Password:
 ✧ Metode Pembayaran : (DANA / QRIS)
-✧ Catatan Tambahan (opsional):`;
-
-        return message.reply(formapk);
+✧ Catatan Tambahan (opsional):`);
     }
 
-    // form order
+    // ================== GENERIC FORM ================== //
     if (message.content.startsWith("?form")) {
-        const form = `## 🧁 ──  form data akun
+        return message.reply(`## 🧁 ──  form data akun
 ㅤ
 💌 email :
 🔑 password :
 📦 produk : (nitro / decoration / app premium)
 ⏱️ durasi :
-📌 note tambahan : (opsional)`;
-
-        return message.reply(form);
+📌 note tambahan : (opsional)`);
     }
 
-    // ================== PAYMENT INFO (!cyzpay) ================== //
+    // ================== PAYMENT INFO (?cpay) ================== //
     if (message.content === "?cpay") {
-
-        // cuma ADMIN yang bisa pake
         if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
             return message.reply("kamu belum punya izin buat pake command ini ✨");
         }
@@ -182,18 +170,16 @@ client.on(Events.MessageCreate, async (message) => {
                         "Silakan scan QR di bawah ini untuk pembayaran via QRIS."
                 }
             )
-            // ganti URL di bawah ini dengan link gambar QRIS kamu
-            .setImage("https://cdn.discordapp.com/attachments/977100232972181544/1445469196782932150/cyzpay.jpg?ex=69307598&is=692f2418&hm=9c12199b2be6e8559c7929baecae91505c9f06faf0254418ac0a01d8a63e5881&")
+            .setImage("https://cdn.discordapp.com/attachments/977100232972181544/1445469196782932150/cyzpay.jpg")
             .setFooter({
-                text:
-                    "🛼 note :  please send proof of payment clearly without cutting, editing & etc. thank uu 💗"
+                text: "🛼 note :  please send proof of payment clearly without cutting, editing & etc. thank uu 💗"
             })
             .setTimestamp();
 
         return message.reply({ embeds: [payEmbed] });
     }
 
-     // ================== TICKET PANEL COMMAND ================== //
+    // ================== TICKET PANEL COMMAND ================== //
     if (message.content === "?ticketpanel") {
         const ticketEmbed = new EmbedBuilder()
             .setTitle("🎟️・Open a Ticket")
@@ -209,159 +195,86 @@ client.on(Events.MessageCreate, async (message) => {
         return message.channel.send({ embeds: [ticketEmbed], components: [buttons] });
     }
 
-    // ================== PRICE LIST (?pl / ?cpl) ================== //
-if (message.content === "?pl" || message.content === "?cpl") {
-    const plEmbed = new EmbedBuilder()
-        .setTitle("🌷💗 AiySelle’s Store — Price List App Premium")
-        .setDescription(
-            "Silakan cek kategori aplikasi di bawah dan pilih yang kamu mau.\n" +
-            "Kalau bingung, boleh tanya dulu / open ticket yaa 🌸\n" +
-            "\u200B"
-        )
-        .addFields(
-            {
-                name: "🍓✨ STREAMING APPS",
-                value:
-                    "• Catchplay 1b — 10k\n" +
-                    "• Catchplay 6b — 18k\n" +
-                    "• Catchplay 12b — 25k\n\n" +
+    // ================== PANEL PREMIUM APPS (SELECT MENU) ================== //
+    if (message.content === "?apppanel") {
+        const embed = new EmbedBuilder()
+            .setTitle("🌷 Premium Apps ･ﾟ✧")
+            .setColor(0xFFC0DC)
+            .setDescription(`
+✧ Tersedia semua aplikasi premium & kebutuhan sosmed.
 
-                    "• MovieBox 1b — 12k\n" +
-                    "• MovieBox 3b — 20k\n" +
-                    "• MovieBox 12b — 30k\n\n" +
+Kalau aplikasi yang kamu cari belum ada di daftar, kamu bisa **request lewat ticket**,  
+nanti aku bantu carikan versi yang paling cocok dan aman untuk kamu gunakan ✦
 
-                    "• Sunshiroll 12b — 20k\n\n" +
+Seluruh layanan bersifat **original, aman, dan nyaman dipakai**, jadi kamu bisa menikmati fitur premiumnya tanpa worry ♡
 
-                    "• Prime Video share 1b — 10k\n" +
-                    "• Prime share (2u) 1b — 13k\n" +
-                    "• Prime private 1b — 20k\n\n" +
+Silakan pilih aplikasi di menu bawah yaa ˚₊‧♡
+> “Yuk, pilih dulu aplikasinya di sini ↓”
+`);
 
-                    "• Fizzo 1b — 10k\n" +
-                    "• Fizzo 6b — 18k\n" +
-                    "• Fizzo 12b — 22k\n\n" +
+        const menu = new StringSelectMenuBuilder()
+            .setCustomId("premium_app_select")
+            .setPlaceholder("Pilih aplikasi yang kamu mau…")
+            .addOptions(
+                {
+                    label: "Netflix",
+                    value: "netflix",
+                    description: "Harian / Mingguan / Bulanan / Private.",
+                    emoji: "<:netflix:1446369911629807680>"
+                },
+                {
+                    label: "Crunchyroll",
+                    value: "crunchyroll",
+                    description: "Crunchyroll Durasi Bulanan /Tahunan.",
+                    emoji: "<:crunchyroll:1446373595679952921>"
+                },
+                {
+                    label: "CapCut",
+                    value: "capcut",
+                    description: "CapCut PRO / Team.",
+                    emoji: "<:Capcut:1446370939041349654>"
+                },
+                {
+                    label: "Apple Music",
+                    value: "apple_music",
+                    description: "Apple Music Individual / Family.",
+                    emoji: "<:Apple_Music:1446371969044844626>"
+                },
+                {
+                    label: "Wattpad",
+                    value: "wattpad",
+                    description: "Wattpad Premium Durasi Bulanan /Tahunan.",
+                    emoji: "<:Wattpad:1446373038110281833>"
+                },
+                {
+                    label: "YouTube Premium",
+                    value: "youtube",
+                    description: "Famplan / Indplan / Head.",
+                    emoji: "<:Youtubelogo:1446371208957399062>"
+                },
+                {
+                    label: "Canva",
+                    value: "canva",
+                    description: "Canva Premium / EDU / Lifetime.",
+                    emoji: "<:canva:1446371317396934787>"
+                },
+                {
+                    label: "Spotify",
+                    value: "spotify",
+                    description: "Famplan / Indplan.",
+                    emoji: "<:Spotify:1446370163610882060>"
+                }
+            );
 
-                    "• Vidio Platinum 12b — 15k (TV only)\n" +
-                    "• Vidio share 2u1b — 22k\n" +
-                    "• Vidio private 1b — 40k\n\n" +
+        const row = new ActionRowBuilder().addComponents(menu);
 
-                    "• Crunchyroll 12b — 15k\n\n" +
+        return message.channel.send({
+            embeds: [embed],
+            components: [row]
+        });
+    }
 
-                    "• HBO/MAX standar 1b — 20k\n" +
-                    "• HBO/MAX ultimate 1b — 22k\n\n" +
-
-                    "• WeTV 5u1b — 12k\n" +
-                    "• WeTV 3u1b — 20k\n\n" +
-
-                    "• Bstation 1b — 10k\n" +
-                    "• Bstation 12b — 20k\n\n" +
-
-                    "• IQIYI standar 1b — 10k\n" +
-                    "• IQIYI premium 1b — 13k\n" +
-                    "• IQIYI premium 3b — 20k\n" +
-                    "• IQIYI premium 12b — 30k\n\n" +
-
-                    "• Youku 1b — 10k\n" +
-                    "• Youku 3b — 20k\n" +
-                    "• Youku 12b — 30k\n\n" +
-
-                    "• VIU anlim 1b — 8k\n" +
-                    "• VIU anlim 6b — 12k\n" +
-                    "• VIU anlim 12b — 15k\n" +
-                    "• VIU anlim lifetime — 20k\n\n" +
-
-                    "• DrakorID 1b — 8k\n" +
-                    "• DrakorID 3b — 12k\n" +
-                    "• DrakorID 6b — 18k\n" +
-                    "• DrakorID 12b — 25k\n\n"+
-                    "\u200B"
-            },
-            {
-                name: "🎀 NETFLIX",
-                value:
-                    "• **1P1U**\n" +
-                    "   1h — 6k\n" +
-                    "   3h — 12k\n" +
-                    "   7h — 13k\n" +
-                    "   1b — 30k\n" +
-                    "   2b — 60k\n\n" +
-
-                    "• **1P2U**\n" +
-                    "   1h — 5k\n" +
-                    "   3h — 9k\n" +
-                    "   7h — 12k\n" +
-                    "   1b — 22k\n\n" +
-
-                    "• Private 7h — 45k\n" +
-                    "• Semi Private 1b — 40k\n\n"+
-                    "\u200B"
-            },
-            {
-                name: "💗🎀 EDITING APPS",
-                value:
-                    "• Picsart private 1b — 20k\n" +
-                    "• Picsart share 1b — 10k\n\n" +
-
-                    "• CapCut share 1b — 12k\n" +
-                    "• CapCut private 1b — 22k\n" +
-                    "• CapCut private 7d — 10k\n" +
-                    "• CapCut share 7d — 7k\n\n" +
-
-                    "• VSCO 12b — 5k\n" +
-                    "• Polar 12b — 7k\n\n" +
-
-                    "• CamScanner 1b — 10k\n" +
-                    "• CamScanner 12b — 20k\n\n" +
-
-                    "• Lightroom 12b — 15k\n" +
-                    "• IbisPaintX 12b — 15k\n\n" +
-
-                    "• Canva member 1b — 7k\n" +
-                    "• Canva EDU 6b — 15k\n" +
-                    "• Canva lifetime gar 6b — 25k\n\n" +
-
-                    "• Alight Motion private 6b — 10k\n" +
-                    "• Alight Motion share 12b — 10k\n\n" +
-
-                    "• OldRoll Lifetime — 20k\n\n"+
-                    "\u200B"
-            },
-            {
-                name: "🌸✨ OTHER APPS",
-                value:
-                    "• Perplexity private 1b (fullgar) — 22k\n" +
-                    "• Perplexity private 1b (nogar) — 12k\n\n" +
-
-                    "• ChatGPT Plus private 1b — 25k\n" +
-                    "• ChatGPT share 1b — 20k\n\n" +
-
-                    "• Apple Music 1b — 10k\n" +
-                    "• Apple Music head 1b — 15k\n\n" +
-
-                    "• Spotify 1b — 35k\n" +
-                    "• Spotify 2b — 35k\n\n" +
-
-                    "• Zoom 14d — 8k\n" +
-                    "• Zoom 1b — 15k\n\n" +
-
-                    "• Scribd private 1b — 10k\n\n" +
-
-                    "• Grammarly share 1b — 15k\n" +
-                    "• Quillbot share 1b — 7k\n" +
-                    "• Quillbot private 1b — 29k\n\n" +
-
-                    "• Wattpad 12b — 15k"
-            }
-        )
-        .setFooter({ text: "Cyizzie Shop • App Premium Pricelist" })
-        .setTimestamp();
-
-    return message.reply({ embeds: [plEmbed] });
-}
-
-});
-
-    // ================== SHOP OPEN ================== //
-    client.on(Events.MessageCreate, async (message) => {
+    // ================== SHOP STATUS ================== //
     if (message.content === "?open") {
         if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator))
             return message.reply("kamu belum punya izin buat pake command ini ✨");
@@ -393,7 +306,6 @@ Silakan order ya 🤍
         return;
     }
 
-    // ================== SHOP HOLD ================== //
     if (message.content === "?hold") {
         if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator))
             return message.reply("kamu belum punya izin buat pake command ini ✨");
@@ -420,7 +332,6 @@ Silakan order ya 🤍
         return;
     }
 
-    // ================== SHOP CLOSE ================== //
     if (message.content === "?close") {
         if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator))
             return message.reply("kamu belum punya izin buat pake command ini ✨");
@@ -448,21 +359,20 @@ Silakan order ya 🤍
         return;
     }
 
-    // ---------- STAFF TOOLS (HANYA DI TICKET THREAD) ---------- //
+    // ================== STAFF TOOLS (HANYA DI TICKET THREAD) ================== //
     if (message.content === "?wait") {
+        const isStaff = message.member.roles.cache.has(STAFF_ROLE_ID);
+        const inTicketThread =
+            message.channel.type === ChannelType.PrivateThread ||
+            message.channel.type === ChannelType.PublicThread;
 
-         const isStaff = message.member.roles.cache.has(STAFF_ROLE_ID);
-
-    const inTicketThread =
-        message.channel.type === ChannelType.PrivateThread ||
-        message.channel.type === ChannelType.PublicThread;
         if (!isStaff)
             return message.reply("command ini khusus **staff** ✨");
         if (!inTicketThread)
             return message.reply("command ini cuma boleh dipakai di **ticket thread** ✨");
 
         const embed = new EmbedBuilder()
-            .setTitle("⏳・Order Status: On Process")
+            .setTitle("⏳・Order Status: On Waiting")
             .setColor("#F7D774")
             .setDescription(`
 Order kamu lagi **diproses** yaa 🤍  
@@ -478,12 +388,10 @@ Order kamu lagi **diproses** yaa 🤍
     }
 
     if (message.content === "?proses") {
-
-         const isStaff = message.member.roles.cache.has(STAFF_ROLE_ID);
-
-    const inTicketThread =
-        message.channel.type === ChannelType.PrivateThread ||
-        message.channel.type === ChannelType.PublicThread;
+        const isStaff = message.member.roles.cache.has(STAFF_ROLE_ID);
+        const inTicketThread =
+            message.channel.type === ChannelType.PrivateThread ||
+            message.channel.type === ChannelType.PublicThread;
 
         if (!isStaff)
             return message.reply("command ini khusus **staff** ✨");
@@ -501,12 +409,10 @@ Order kamu lagi **diproses** yaa 🤍
     }
 
     if (message.content === "?done") {
-
-         const isStaff = message.member.roles.cache.has(STAFF_ROLE_ID);
-
-    const inTicketThread =
-        message.channel.type === ChannelType.PrivateThread ||
-        message.channel.type === ChannelType.PublicThread;
+        const isStaff = message.member.roles.cache.has(STAFF_ROLE_ID);
+        const inTicketThread =
+            message.channel.type === ChannelType.PrivateThread ||
+            message.channel.type === ChannelType.PublicThread;
 
         if (!isStaff)
             return message.reply("command ini khusus **staff** ✨");
@@ -525,7 +431,7 @@ Silakan kirim testi di <#1437113270598242406>
 wajib pakai **screenshot produk** ✨
 
 <a:PinkRightArrowBounce:1444894009435881524> Ga testi dalam 24 jam setelah produk diterima, **no garansi**  
-<a:PinkRightArrowBounce:1444894009435881524> Testi **wajib pakai screenshot** product  
+<a:PinkRightArrowBounce:1444894009435881524> Testi **wajib pakai screenshot** product dan word (nama produk + review) 
 <a:PinkRightArrowBounce:1444894009435881524> Leave server = **garansi void / hangus**
 `)
             .setTimestamp();
@@ -534,113 +440,339 @@ wajib pakai **screenshot produk** ✨
     }
 });
 
-// ================== BUTTON INTERACTION (TICKET + CLOSE + TRANSCRIPT) ================== //
+// ================== INTERACTION HANDLER — PREMIUM APPS + TICKET ================== //
 client.on(Events.InteractionCreate, async (interaction) => {
+
+    // ================== SELECT MENU PREMIUM APPS ================== //
+    if (interaction.isStringSelectMenu() && interaction.customId === "premium_app_select") {
+
+        const selected = interaction.values[0];
+        let appEmbed;
+        
+        // ========== NETFLIX ==========
+        if (selected === "netflix") {
+            appEmbed = new EmbedBuilder()
+                .setTitle("<:netflix:1446369911629807680> NETFLIX PRICELIST")
+                .setColor("#E50914")
+                .setDescription(`
+╭────────꒰ **Netflix** ꒱
+
+**˖˙⁠๑ 1p2u ˖⊹**
+ › ◌ 1 bulan : 20.000
+ › ◌ 2 bulan : 40.000
+ › ◌ 3 bulan : 60.000
+
+**˖˙⁠๑ 1p1u ˖⊹**
+ › ◌ 7 hari : 13.000
+ › ◌ 1 bulan : 30.000
+ › ◌ 2 bulan : 60.000
+ › ◌ 3 bulan : 90.000
+
+**˖˙⁠๑ semi private ˖⊹**
+ › ◌ 7 hari : 17.000
+ › ◌ 1 bulan : 40.000
+ › ◌ 2 bulan : 80.000
+ › ◌ 3 bulan : 120.000
+
+**˖˙⁠๑ private ˖⊹**
+ › ◌ 7 hari : 60.000
+ › ◌ 1 bulan : 160.000
+
+**๑⁠˙⁠❥ notes**
+˖⊹ acc s only
+˖⊹ sharing 1u/2u login 1 dev only
+˖⊹ sharing semi private login max 2 dev
+˖⊹ private made by order
+`)
+                .setFooter({ text: `Dipilih oleh ${interaction.user.username}` })
+                .setTimestamp();
+        }
+
+
+        // ========== CRUNCHYROLL ==========
+        else if (selected === "crunchyroll") {
+            appEmbed = new EmbedBuilder()
+                .setTitle("<:crunchyroll:1446373595679952921> CRUNCHYROLL PRICELIST")
+                .setColor("#F47521")
+                .setDescription(`
+╭────────꒰ **CRUNCHYROLL** ꒱
+
+**˖˙⁠๑ sharing ˖⊹**
+ › ◌ 1 bulan : 12.000
+ › ◌ 2 bulan : 18.000
+ › ◌ 12 bulan : 25.000
+
+**๑⁠˙⁠❥ notes**
+˖⊹ acc s only
+˖⊹ no renew
+`)
+                .setFooter({ text: `Dipilih oleh ${interaction.user.username}` })
+                .setTimestamp();
+        }
+
+        // ========== CAPCUT ==========
+        else if (selected === "capcut") {
+            appEmbed = new EmbedBuilder()
+                .setTitle("<:Capcut:1446370939041349654> CAPCUT PRICELIST")
+                .setColor("#000000")
+                .setDescription(`
+╭────────꒰ **CapCut Pro** ꒱
+
+**˖˙⁠๑ sharing 3 user ˖⊹**
+ › ◌ 7 hari : 7.000
+ › ◌ 14 hari : 11.000
+ › ◌ 1 bulan : 15.000
+
+**˖˙⁠๑ private ˖⊹**
+ › ◌ 7 hari : 12.000
+ › ◌ 1 bulan : 20.000 (garansi 7 hari)
+ › ◌ 1 bulan : 30.000 (full garansi)
+
+**๑⁠˙⁠❥ notes**
+˖⊹ acc s only
+˖⊹ sharing gaboleh login pc / laptop!
+˖⊹ login laptop wajib beli 2slot!
+`)
+                .setFooter({ text: `Dipilih oleh ${interaction.user.username}` })
+                .setTimestamp();
+        }
+
+        // ========== APPLE MUSIC ==========
+        else if (selected === "apple_music") {
+            appEmbed = new EmbedBuilder()
+                .setTitle("<:Apple_Music:1446371969044844626> APPLE MUSIC PRICELIST")
+                .setColor("#FA2D48")
+                .setDescription(`
+╭────────꒰ **Apple Music** ꒱
+
+**˖˙⁠๑ imess ˖⊹**
+› ◌ 1 bulan : 10.000
+› ◌ 2 bulan : 20.000
+
+**˖˙⁠๑ individual ˖⊹**
+› ◌ 1 bulan : 15.000
+
+**๑⁠˙⁠❥ notes**
+˖⊹ via imess / ind butuh email atau apple id
+`)
+                .setFooter({ text: `Dipilih oleh ${interaction.user.username}` })
+                .setTimestamp();
+        }
+
+        // ========== WATTPAD ==========
+        else if (selected === "wattpad") {
+            appEmbed = new EmbedBuilder()
+                .setTitle("<:Wattpad:1446373038110281833> WATTPAD PRICELIST")
+                .setColor("#FF8C00")
+                .setDescription(`
+╭────────꒰ **Wattpad** ꒱
+
+**˖˙⁠๑ famplan ˖⊹**
+› ◌ 1 bulan : 8.000
+› ◌ 12 bulan : 25.000
+
+**๑⁠˙⁠❥ notes**
+˖⊹ acc dari seller
+˖⊹ durasi 1 tahun garansi 6 bulan
+`)
+                .setFooter({ text: `Dipilih oleh ${interaction.user.username}` })
+                .setTimestamp();
+        }
+
+        // ========== YOUTUBE ==========
+        else if (selected === "youtube") {
+            appEmbed = new EmbedBuilder()
+                .setTitle("<:Youtubelogo:1446371208957399062> YOUTUBE PREMIUM PRICELIST")
+                .setColor("#FF0000")
+                .setDescription(`
+╭────────꒰ **YouTube** ꒱
+
+**˖˙⁠๑ famplan ˖⊹**
+› ◌ 1 bulan : 7.000
+› ◌ 2 bulan : 12.000
+
+**˖˙⁠๑ indplan ˖⊹**
+› ◌ 1 bulan : 10.000
+› ◌ 3 bulan : 27.000 (renew) 
+› ◌ 3 bulan : 40.000 (no renew, acc s ongly) 
+
+**˖˙⁠๑ mixplan ˖⊹**
+› ◌ 3 bulan : 20.000
+› ◌ 4 bulan : 25.000
+› ◌ 6 bulan : 35.000
+
+**๑⁠˙⁠❥ notes**
+˖⊹ acc s +2k
+˖⊹ indplan bisa pakai acc c tapi wajib gmail fresh.
+˖⊹ famplan max invite 1 tahun hanya 2×. jika c sudah terlanjur di invite namun sudah tidak bisa join family lagi maka no reff
+˖⊹ pastikan sudah left family jika sebelumnya sudah pernah berlangganan.
+`)
+                .setFooter({ text: `Dipilih oleh ${interaction.user.username}` })
+                .setTimestamp();
+        }
+
+        // ========== CANVA ==========
+        else if (selected === "canva") {
+            appEmbed = new EmbedBuilder()
+                .setTitle("<:canva:1446371317396934787> CANVA PRICELIST")
+                .setColor("#00C4CC")
+                .setDescription(`
+╭────────꒰ **Canva Pro** ꒱
+
+**˖˙⁠๑ member ˖⊹**
+ › ◌ 1 bulan : 5.000
+ › ◌ 2 bulan : 9.000
+ › ◌ 3 bulan : 12.000
+ › ◌ 6 bulan : 16.000
+ › ◌ 1 tahun : 18.000
+
+**˖˙⁠๑ education ˖⊹**
+ › ◌ lifetime garansi 6 bulan : 20.000
+ › ◌ lifetime garansi 12 bulan : 25.000
+
+**๑⁠˙⁠❥ notes**
+˖⊹ sistem via invite
+˖⊹ durasi 1 tahun, garansi 7 bulan.
+˖⊹ resiko pindah team utk durasi lebih dari 1 bulan
+`)
+                .setFooter({ text: `Dipilih oleh ${interaction.user.username}` })
+                .setTimestamp();
+        }
+
+
+        // ========== SPOTIFY ==========
+        else if (selected === "spotify") {
+            appEmbed = new EmbedBuilder()
+                .setTitle("<:Spotify:1446370163610882060> SPOTIFY PRICELIST")
+                .setColor("#1DB954")
+                .setDescription(`
+╭────────꒰ **Spotify** ꒱
+
+**˖˙⁠๑ famplan/indplan ˖⊹**
+ › ◌ 1 bulan : 20.000
+ › ◌ 2 bulan : 35.000
+ › ◌ 3 bulan : 45.000
+
+**๑⁠˙⁠❥ notes**
+˖⊹ acc s only
+˖⊹ no renew (diusahakan)
+˖⊹ durasi 1 bulan garansi 20 hari
+˖⊹ durasi 2 bulan garansi 40 hari
+˖⊹ durasi 3 bulan garansi 60 hari
+`)
+                .setFooter({ text: `Dipilih oleh ${interaction.user.username}` })
+                .setTimestamp();
+        }
+
+        return interaction.reply({ embeds: [appEmbed], ephemeral: true });
+    }
+
+    // ================== BUTTON INTERACTION (TICKET) ================== //
     if (!interaction.isButton()) return;
 
     const guild = interaction.guild;
     const user  = interaction.user;
 
     // =============== CLOSE TICKET =============== //
-// =============== CLOSE TICKET =============== //
-if (interaction.customId === "close_ticket") {
-    const thread = interaction.channel;
+    if (interaction.customId === "close_ticket") {
+        const thread = interaction.channel;
 
-    if (
-        thread.type !== ChannelType.PublicThread &&
-        thread.type !== ChannelType.PrivateThread
-    ) {
-        return interaction.reply({
-            content: "Perintah ini hanya bisa digunakan di ticket thread ✨",
-            ephemeral: true
-        });
+        if (
+            !thread ||
+            (thread.type !== ChannelType.PublicThread &&
+             thread.type !== ChannelType.PrivateThread)
+        ) {
+            return interaction.reply({
+                content: "Perintah ini hanya bisa dipakai di dalam ticket thread ✨",
+                ephemeral: true
+            });
+        }
+
+        await interaction.deferReply({ ephemeral: true });
+
+        try {
+            const msgs = await thread.messages.fetch({ limit: 100 });
+            const sorted = Array.from(msgs.values()).sort(
+                (a, b) => a.createdTimestamp - b.createdTimestamp
+            );
+
+            const openedMsg = sorted[0];
+            let openedBy = openedMsg?.author;
+            let ticketOwnerMember = null;
+
+            if (openedMsg && openedMsg.content) {
+                const match = openedMsg.content.match(/<@(\d+)>/);
+                if (match) {
+                    ticketOwnerMember = await thread.guild.members
+                        .fetch(match[1])
+                        .catch(() => null);
+                }
+            }
+            if (ticketOwnerMember) openedBy = ticketOwnerMember.user;
+
+            let txt = `Ticket Transcript — ${thread.name}\n\n`;
+            for (const m of sorted) {
+                txt += `[${new Date(m.createdTimestamp).toLocaleString()}] ${m.author.tag}: ${m.content}\n`;
+            }
+
+            const buffer = Buffer.from(txt, "utf8");
+            const file = new AttachmentBuilder(buffer, {
+                name: `ticket-${thread.id}.txt`
+            });
+
+            const embed = new EmbedBuilder()
+                .setColor("#FFB6D5")
+                .setTitle("🌸 Ticket Closed")
+                .setDescription("Ticket kamu sudah ditutup & transcript berhasil dibuat 💗")
+                .addFields(
+                    { name: "Opened By", value: `<@${openedBy.id}>` },
+                    { name: "Closed By", value: `<@${user.id}>` }
+                )
+                .setTimestamp();
+
+            const row = new ActionRowBuilder().addComponents(
+                new ButtonBuilder()
+                    .setStyle(ButtonStyle.Link)
+                    .setLabel("🔗 View Thread")
+                    .setURL(`https://discord.com/channels/${guild.id}/${thread.id}`)
+            );
+
+            if (ticketOwnerMember && !ticketOwnerMember.user.bot) {
+                await ticketOwnerMember.send({
+                    content: "Haiii 💗 ini recap ticket kamu yaa ✨",
+                    embeds: [embed],
+                    files: [file],
+                    components: [row]
+                }).catch(() => {});
+            }
+
+            await user.send({
+                content: "Haiii 💗 ini recap ticket kamu yaa ✨",
+                embeds: [embed],
+                files: [file],
+                components: [row]
+            }).catch(() => {});
+
+            await interaction.editReply({
+                content: "Ticket ditutup & transcript sudah dikirim ke DM kamu 💗"
+            });
+
+            await thread.setArchived(true).catch(() => {});
+            await thread.setLocked(true).catch(() => {});
+
+        } catch (err) {
+            console.error("Error saat close ticket:", err);
+            if (interaction.deferred) {
+                await interaction.editReply({
+                    content: "Ada error saat menutup ticket, coba lagi ya 💗"
+                }).catch(() => {});
+            }
+        }
+
+        return;
     }
 
-    await interaction.reply({
-        content: "Menutup ticket & membuat transcript... 💗",
-        ephemeral: true
-    });
-
-    // Ambil pesan
-    const msgs = await thread.messages.fetch({ limit: 100 });
-    const sorted = Array.from(msgs.values()).sort(
-        (a, b) => a.createdTimestamp - b.createdTimestamp
-    );
-
-    // Data penting
-    const openedMsg = sorted[0];
-    const openedBy = openedMsg?.author;
-    const openedAt = Math.floor(thread.createdTimestamp / 1000);
-    const closedAt = Math.floor(Date.now() / 1000);
-    const closedBy = interaction.user;
-
-    // ===== GENERATE TXT TRANSCRIPT ===== //
-    let txt = `Ticket Transcript — ${thread.name}\n`;
-    txt += `Ticket ID: ${thread.id}\n`;
-    txt += `Opened By: ${openedBy?.tag} (${openedBy?.id})\n`;
-    txt += `Opened At: ${new Date(thread.createdTimestamp).toLocaleString()}\n`;
-    txt += `Closed By: ${closedBy.tag} (${closedBy.id})\n`;
-    txt += `Closed At: ${new Date().toLocaleString()}\n`;
-    txt += `----------------------------------------\n\n`;
-
-    for (const m of sorted) {
-        const time = new Date(m.createdTimestamp).toLocaleString();
-        const author = m.author ? m.author.tag : "Unknown";
-        const content = m.content || "";
-        const attach = m.attachments.size
-            ? ` [attachments: ${m.attachments.map(a => a.url).join(", ")}]`
-            : "";
-        txt += `[${time}] ${author}: ${content}${attach}\n`;
-    }
-
-    const buffer = Buffer.from(txt, "utf8");
-    const file = new AttachmentBuilder(buffer, {
-        name: `ticket-${thread.id}.txt`
-    });
-
-    // ===== AESTHETIC EMBED ===== //
-    const embed = new EmbedBuilder()
-        .setColor("#FFB6D5")
-        .setTitle("🌸 Ticket Closed")
-        .setDescription("Ticket kamu sudah ditutup & transcript berhasil dibuat 💗")
-        .addFields(
-            { name: "🔢 Ticket ID", value: `\`${thread.id}\``, inline: true },
-            { name: "🧁 Opened By", value: `<@${openedBy?.id}>`, inline: true },
-            { name: "🩷 Closed By", value: `<@${closedBy.id}>`, inline: true },
-            { name: "🕒 Open Time", value: `<t:${openedAt}:f>`, inline: true },
-            { name: "🌙 Closed Time", value: `<t:${closedAt}:f>`, inline: true },
-            { name: "📦 Ticket Type", value: `\`${thread.name.replace("ticket-","")}\`` }
-        )
-        .setFooter({ text: "Cyizzie Shop • Soft Pink Aesthetic ♡" })
-        .setTimestamp();
-
-    // ===== BUTTON VIEW THREAD ===== //
-    const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-            .setStyle(ButtonStyle.Link)
-            .setLabel("🔗 View Thread")
-            .setURL(`https://discord.com/channels/${interaction.guild.id}/${thread.id}`)
-    );
-
-    // ===== SEND DM ===== //
-    await closedBy.send({
-        content: "Haiii 💗 ini recap ticket kamu yaa ✨",
-        embeds: [embed],
-        files: [file],
-        components: [row]
-    }).catch(() => {});
-
-    // ===== ARCHIVE / LOCK / DELETE ===== //
-    await thread.setArchived(true).catch(() => {});
-    await thread.setLocked(true).catch(() => {});
-    setTimeout(() => {
-        thread.delete().catch(() => {});
-    }, 1500);
-
-    return;
-}
-
-    // =============== CREATE TICKET (buy / ask / custom) =============== //
+    // =============== CREATE TICKET =============== //
     if (!["buy", "ask", "custom"].includes(interaction.customId)) return;
 
     const ticketBase = guild.channels.cache.get(TICKET_BASE_CHANNEL);
@@ -651,9 +783,7 @@ if (interaction.customId === "close_ticket") {
         });
     }
 
-    const ticketName = `ticket-${user.username}`; // username tanpa di-edit
-
-    // Cek apakah masih ada thread dengan nama itu yang BELUM ke-delete
+    const ticketName = `ticket-${user.username}`;
     const existing = ticketBase.threads.cache.find(
         t => t.name === ticketName && !t.archived
     );
@@ -664,20 +794,12 @@ if (interaction.customId === "close_ticket") {
         });
     }
 
-    // Create thread baru
     const thread = await ticketBase.threads.create({
         name: ticketName,
-        autoArchiveDuration: 1440, // 24 jam
+        autoArchiveDuration: 1440,
         reason: "Ticket created"
     });
 
-    // Hapus pesan system otomatis (kalau ada)
-    try {
-        const systemMsg = await ticketBase.messages.fetch({ limit: 1 });
-        systemMsg.first()?.delete().catch(() => {});
-    } catch {}
-
-    // Add user ke thread
     await thread.members.add(user.id).catch(() => {});
 
     await interaction.reply({
@@ -699,7 +821,7 @@ if (interaction.customId === "close_ticket") {
             .setEmoji("🔒")
     );
 
-        await thread.send({
+    await thread.send({
         content: `<@${user.id}> <@&${STAFF_ROLE_ID}>`,
         embeds: [openEmbed],
         components: [closeBtn]
