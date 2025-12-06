@@ -11,9 +11,9 @@ const {
     ButtonStyle,
     ChannelType,
     AttachmentBuilder,
-    StringSelectMenuBuilder
+    StringSelectMenuBuilder,
+    MessageFlags
 } = require("discord.js");
-const axios = require("axios");
 
 // ================== CLIENT ================== //
 const client = new Client({
@@ -24,6 +24,15 @@ const client = new Client({
         GatewayIntentBits.GuildVoiceStates,
         GatewayIntentBits.GuildMembers
     ]
+});
+
+// ================== GLOBAL ERROR HANDLER (BIAR GA CRASH) ================== //
+client.on("error", (err) => {
+    console.error("Client error:", err);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+    console.error("Unhandled Rejection:", reason);
 });
 
 // ================== CONFIG ID ================== //
@@ -144,6 +153,153 @@ client.on(Events.MessageCreate, async (message) => {
 📦 produk : (nitro / decoration / app premium)
 ⏱️ durasi :
 📌 note tambahan : (opsional)`);
+    }
+
+    // ================== DISCORD SHOP PANEL (?pldc) ================== //
+    if (message.content === "?pldc") {
+        const shopEmbed = new EmbedBuilder()
+            .setTitle("<:Nitro_boost:1446372485183307907> DISCORD NEEDS ・⊹♡³")
+            .setColor(0xFFC0DC)
+            .setDescription(
+`**୨୧  Discord Services ୨୧** 
+**Nitro ┊ Decoration ┊ Server Boost**
+
+Layanan untuk mempercantik tampilan akun dan server dengan nuansa
+lebih expressive dan elegan. Semua proses dilakukan secara manual,
+original, dan tetap mengutamakan keamanan akun.
+
+Jika terdapat permintaan khusus atau layanan yang belum tercantum,
+silakan request melalui ticket dan kami bantu menyesuaikan sesuai kebutuhanmu.
+
+> buka ticket di <#1443163855042641921> untuk melanjutkan ˖🤍𓇼
+`
+            )
+            .setTimestamp();
+
+        const menu = new StringSelectMenuBuilder()
+            .setCustomId("discord_shop_select")
+            .setPlaceholder("Pilih kategori layanan yang kamu mau…")
+            .addOptions(
+                {
+                    label: "Nitro Boost",
+                    value: "nitro_boost",
+                    description: "Langganan Nitro premium untuk akun Discord kamu.",
+                    emoji: "💎"
+                },
+                {
+                    label: "N!tro Promotion",
+                    value: "nitro_promo",
+                    description: "Paket promo Nitro 3 bulan untuk semua akun.",
+                    emoji: "🎉"
+                },
+                {
+                    label: "Decoration & Profile Effect",
+                    value: "decoration",
+                    description: "Avatar decoration & efek profil eksklusif.",
+                    emoji: "🎀"
+                },
+                {
+                    label: "Boost Server & Server Tag",
+                    value: "server_boost",
+                    description: "Naikkan level & tampilan server dengan boost.",
+                    emoji: "⚡"
+                }
+            );
+
+        const row = new ActionRowBuilder().addComponents(menu);
+
+        return message.channel.send({
+            embeds: [shopEmbed],
+            components: [row]
+        });
+    }
+
+    // ================== PRICELIST PANEL FULL (?pl) ================== //
+    if (message.content === "?pl") {
+        const priceEmbed = new EmbedBuilder()
+            .setTitle("🌸 Cyizzie Shop ・ Pricelist")
+            .setColor(0xFFC0DC)
+            .setDescription(
+`Berikut rangkuman pricelist N!TRO di **Cyizzie Shop** <a:d_strawberrycake:1433157793782829157>  
+Silakan cek detailnya di bawah ini, lalu open ticket bila sudah siap order ♡`
+            )
+            .addFields(
+                {
+                    name: "<:Nitro_boost:1446372485183307907> Nitro Boost",
+                    value:
+`・ Nitro Boost Vilog 1 Bulan : 75.000
+・ Nitro Boost Vilog 1 Tahun : 700.000
+・ Nitro Boost Gift 1 Tahun : 78.000
+・ Nitro Boost Gift 1 Tahun : 730.000
+
+_> Via vilog, garansi sesuai ketentuan toko._`,
+                    inline: false
+                },
+                {
+                    name: "<:Nitro_boost:1446372485183307907> N!tro Boost Vilog Promotion",
+                    value:
+`**Promotion 3 Month [ All/New User ]**
+<a:PinkRightArrowBounce:1444894009435881524> **65.000 IDR**
+
+**NOTE**
+ <a:PinkRightArrowBounce:1444894009435881524> Berlaku untuk All User / Semua Akun
+ <a:PinkRightArrowBounce:1444894009435881524> Akun tanpa subscriptions aktif
+ <a:PinkRightArrowBounce:1444894009435881524> Wajib dicek dulu status bisa / tidaknya
+ <a:PinkRightArrowBounce:1444894009435881524> Proses via Login Akun Discord
+
+_> Paket promo hanya tersedia di periode tertentu._`,
+                    inline: false
+                },
+               {
+                name: "<a:PinkRibbonWhisper:1444892780118671381> Decoration & Profile Effect",
+                value:
+`<a:MyMelodySpin:1444891323596537917> **Dec0rations V!LOG**
+
+With N!tr0 / Without N!tr0 :
+33.000 / 39.500 IDR <a:PinkRightArrowBounce:1444894009435881524> 24.500 / 29.500 IDR
+39.500 / 65.000 IDR <a:PinkRightArrowBounce:1444894009435881524> 29.500 / 49.500 IDR
+52.000 / 91.000 IDR <a:PinkRightArrowBounce:1444894009435881524> 39.999 / 69.500 IDR
+65.000 / 91.000 IDR <a:PinkRightArrowBounce:1444894009435881524> 49.999 / 69.500 IDR
+71.000 / 100.000 IDR <a:PinkRightArrowBounce:1444894009435881524> 54.999 / 79.500 IDR
+91.000 / 105.000 IDR <a:PinkRightArrowBounce:1444894009435881524> 70.999 / 89.500 IDR
+100.000 / 120.000 IDR <a:PinkRightArrowBounce:1444894009435881524> 79.999 / 107.500 IDR`,
+                inline: false
+            },
+            {
+                name: "\u200b",
+                value:
+`<a:PinkExclaimBounce:1444893885246734358>**NOTE :**
+➝ Legally Paid
+➝ Ultra High Quality (UHQ)
+➝ Fast Process
+➝ Require Email, Password & Backup Code
+➝ Via Login`,
+                inline: false
+            },
+                {
+                    name: "<a:Nitro:1446372229683216576> Boost Server & Server Tag",
+                    value:
+`**14x Server Boost 1 Month (24-30 Day) - 130K** 
+**14x Server Boost 3 Month (80 - 90 Day) - 250K**
+
+## OPEN SERVER TAG
+**3x Server Boost 1 Month (24-30 Day) - 40K**
+**3x Server Boost 3 Month (80 - 90 Day) - 50K**
+ㅤ
+➝ proses manual  
+➝ no rush order  
+➝ off anti raid  
+➝ off community features  
+➝ full warranty kecuali acc di kick / kena revoke wave  
+
+_> Bisa request setting tampilan server sekalian, by request lewat ticket._`,
+                    inline: false
+                }
+            )
+            .setFooter({ text: "Cyizzie Shop • Elegance in every service. Comfort in every detail." })
+            .setTimestamp();
+
+        return message.channel.send({ embeds: [priceEmbed] });
     }
 
     // ================== PAYMENT INFO (?cpay) ================== //
@@ -378,7 +534,7 @@ Silakan order ya 🤍
 Order kamu lagi **diproses** yaa 🤍  
 
 📌 **Info penting**
-・ Mohon standby, terutama kalau order Nitro (perlu verifikasi akun)
+・ Mohon standby, terutama kalau order Nitro (perlu verify)
 ・ Jangan ganti email / password dulu sampai selesai
 ・ Cek ticket ini secara berkala untuk update ✨
 `)
@@ -427,11 +583,10 @@ Order kamu sudah **SELESAI** 🧾
 Terima kasih sudah belanja di **Cyizzie Shop** 🤍  
 
 💌 **Testimoni**
-Silakan kirim testi di <#1437113270598242406>  
-wajib pakai **screenshot produk** ✨
+Silakan kirim testi di <#1437113270598242406> dan wajib pakai **screenshot produk** ✨
 
 <a:PinkRightArrowBounce:1444894009435881524> Ga testi dalam 24 jam setelah produk diterima, **no garansi**  
-<a:PinkRightArrowBounce:1444894009435881524> Testi **wajib pakai screenshot** product dan word (nama produk + review) 
+<a:PinkRightArrowBounce:1444894009435881524> Testi **wajib pakai screenshot product**, NO FORWARD/DITERUSKAN!
 <a:PinkRightArrowBounce:1444894009435881524> Leave server = **garansi void / hangus**
 `)
             .setTimestamp();
@@ -446,10 +601,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
     // ================== SELECT MENU PREMIUM APPS ================== //
     if (interaction.isStringSelectMenu() && interaction.customId === "premium_app_select") {
 
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
         const selected = interaction.values[0];
         let appEmbed;
         
-        // ========== NETFLIX ==========
+        // ========== NETFLIX ========== //
         if (selected === "netflix") {
             appEmbed = new EmbedBuilder()
                 .setTitle("<:netflix:1446369911629807680> NETFLIX PRICELIST")
@@ -488,8 +645,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 .setTimestamp();
         }
 
-
-        // ========== CRUNCHYROLL ==========
+        // ========== CRUNCHYROLL ========== //
         else if (selected === "crunchyroll") {
             appEmbed = new EmbedBuilder()
                 .setTitle("<:crunchyroll:1446373595679952921> CRUNCHYROLL PRICELIST")
@@ -510,7 +666,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 .setTimestamp();
         }
 
-        // ========== CAPCUT ==========
+        // ========== CAPCUT ========== //
         else if (selected === "capcut") {
             appEmbed = new EmbedBuilder()
                 .setTitle("<:Capcut:1446370939041349654> CAPCUT PRICELIST")
@@ -537,7 +693,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 .setTimestamp();
         }
 
-        // ========== APPLE MUSIC ==========
+        // ========== APPLE MUSIC ========== //
         else if (selected === "apple_music") {
             appEmbed = new EmbedBuilder()
                 .setTitle("<:Apple_Music:1446371969044844626> APPLE MUSIC PRICELIST")
@@ -559,7 +715,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 .setTimestamp();
         }
 
-        // ========== WATTPAD ==========
+        // ========== WATTPAD ========== //
         else if (selected === "wattpad") {
             appEmbed = new EmbedBuilder()
                 .setTitle("<:Wattpad:1446373038110281833> WATTPAD PRICELIST")
@@ -579,7 +735,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 .setTimestamp();
         }
 
-        // ========== YOUTUBE ==========
+        // ========== YOUTUBE ========== //
         else if (selected === "youtube") {
             appEmbed = new EmbedBuilder()
                 .setTitle("<:Youtubelogo:1446371208957399062> YOUTUBE PREMIUM PRICELIST")
@@ -611,7 +767,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 .setTimestamp();
         }
 
-        // ========== CANVA ==========
+        // ========== CANVA ========== //
         else if (selected === "canva") {
             appEmbed = new EmbedBuilder()
                 .setTitle("<:canva:1446371317396934787> CANVA PRICELIST")
@@ -639,8 +795,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 .setTimestamp();
         }
 
-
-        // ========== SPOTIFY ==========
+        // ========== SPOTIFY ========== //
         else if (selected === "spotify") {
             appEmbed = new EmbedBuilder()
                 .setTitle("<:Spotify:1446370163610882060> SPOTIFY PRICELIST")
@@ -664,7 +819,99 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 .setTimestamp();
         }
 
-        return interaction.reply({ embeds: [appEmbed], ephemeral: true });
+        return interaction.editReply({ embeds: [appEmbed] });
+    }
+
+    // ================== SELECT MENU DISCORD SHOP (NITRO/DECO/BOOST) ================== //
+    if (interaction.isStringSelectMenu() && interaction.customId === "discord_shop_select") {
+
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+        const selected = interaction.values[0];
+        let priceEmbed;
+
+        if (selected === "nitro_boost") {
+            priceEmbed = new EmbedBuilder()
+                .setTitle("<:Nitro_boost:1446372485183307907> Nitro Boost — Pricelist")
+                .setColor(0xFF7FD3)
+                .setDescription(
+`・ Nitro Boost Vilog 1 Bulan : 75.000  
+・ Nitro Boost Vilog 1 Tahun : 700.000  
+・ Nitro Boost Gift 1 Tahun : 78.000  
+・ Nitro Boost Gift 1 Tahun : 730.000  
+
+_> Via vilog, garansi mengikuti ketentuan Cyizzie Shop._`
+                )
+                .setFooter({ text: `Dipilih oleh ${interaction.user.username}` })
+                .setTimestamp();
+        } else if (selected === "nitro_promo") {
+            priceEmbed = new EmbedBuilder()
+                .setTitle("<:Nitro_boost:1446372485183307907> N!tro Boost Vilog Promotion")
+                .setColor(0xFF9AD9)
+                .setDescription(
+`<a:d_strawberrycake:1433157793782829157> **N!tro Promotion 3 Month [ All User ]**  
+<a:PinkRightArrowBounce:1444894009435881524> **65.000 IDR**
+
+<:tanda:1281304218732466292> **NOTE**  
+<a:PinkRightArrowBounce:1444894009435881524> Berlaku untuk _all user_ / semua akun  
+<a:PinkRightArrowBounce:1444894009435881524> Akun tidak memiliki subscription aktif  
+<a:PinkRightArrowBounce:1444894009435881524> Wajib dicek terlebih dahulu status bisa / tidak  
+<a:PinkRightArrowBounce:1444894009435881524> Proses via login akun Discord
+
+_> Paket promo hanya tersedia di periode tertentu._`
+                )
+                .setFooter({ text: `Dipilih oleh ${interaction.user.username}` })
+                .setTimestamp();
+        } else if (selected === "decoration") {
+            priceEmbed = new EmbedBuilder()
+                .setTitle("<a:PinkRibbonWhisper:1444892780118671381> Decoration & Profile Effect — Pricelist")
+                .setColor(0xFFB6E1)
+                .setDescription(
+`<a:MyMelodySpin:1444891323596537917> **Dec0rations V!LOG**
+
+With N!tr0 / Without N!tr0 :  
+<:dot:1418119852496912504> 33.000 / 39.500 IDR  <a:PinkRightArrowBounce:1444894009435881524> 24.500 / 29.500 IDR  
+<:dot:1418119852496912504> 39.500 / 65.000 IDR  <a:PinkRightArrowBounce:1444894009435881524> 29.500 / 49.500 IDR  
+<:dot:1418119852496912504> 52.000 / 91.000 IDR  <a:PinkRightArrowBounce:1444894009435881524> 39.999 / 69.500 IDR  
+<:dot:1418119852496912504> 65.000 / 91.000 IDR  <a:PinkRightArrowBounce:1444894009435881524> 49.999 / 69.500 IDR  
+<:dot:1418119852496912504> 71.000 / 100.000 IDR <a:PinkRightArrowBounce:1444894009435881524> 54.999 / 79.500 IDR  
+<:dot:1418119852496912504> 91.000 / 105.000 IDR <a:PinkRightArrowBounce:1444894009435881524> 70.999 / 89.500 IDR  
+<:dot:1418119852496912504> 100.000 / 120.000 IDR <a:PinkRightArrowBounce:1444894009435881524> 79.999 / 107.500 IDR  
+
+<a:PinkExclaimBounce:1444893885246734358> **NOTE :**  
+<:dot:1418119852496912504> Legally paid  
+<:dot:1418119852496912504> Ultra High Quality [UHQ]  
+<:dot:1418119852496912504> Fast process  
+<:dot:1418119852496912504> Need email, pass & backup code  
+<:dot:1418119852496912504> Via login`
+                )
+                .setFooter({ text: `Dipilih oleh ${interaction.user.username}` })
+                .setTimestamp();
+        } else if (selected === "server_boost") {
+            priceEmbed = new EmbedBuilder()
+                .setTitle("<a:Nitro:1446372229683216576> Boost Server & Server Tag — Pricelist")
+                .setColor(0xD5B4FF)
+                .setDescription(
+`**14x Server Boost 1 Month (24–30 Day) — 130K**  
+**14x Server Boost 3 Month (80–90 Day) — 250K**
+
+**OPEN SERVER TAG**  
+**3x Server Boost 1 Month (24–30 Day) — 40K**  
+**3x Server Boost 3 Month (80–90 Day) — 50K**  
+
+<:dot:1418119852496912504> proses manual  
+<:dot:1418119852496912504> no rush order  
+<:dot:1418119852496912504> off anti raid  
+<:dot:1418119852496912504> off community features  
+<:dot:1418119852496912504> full warranty kecuali acc di kick / kena revoke wave  
+
+_> Bisa request sekalian setting tampilan server, cukup tulis di ticket._`
+                )
+                .setFooter({ text: `Dipilih oleh ${interaction.user.username}` })
+                .setTimestamp();
+        }
+
+        return interaction.editReply({ embeds: [priceEmbed] });
     }
 
     // ================== BUTTON INTERACTION (TICKET) ================== //
@@ -684,11 +931,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
         ) {
             return interaction.reply({
                 content: "Perintah ini hanya bisa dipakai di dalam ticket thread ✨",
-                ephemeral: true
+                flags: MessageFlags.Ephemeral
             });
         }
 
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
         try {
             const msgs = await thread.messages.fetch({ limit: 100 });
@@ -779,7 +1026,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     if (!ticketBase) {
         return interaction.reply({
             content: "Channel ticket base tidak ditemukan, cek ID!",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 
@@ -790,7 +1037,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     if (existing) {
         return interaction.reply({
             content: "kamu sudah punya ticket aktif ✨",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
     }
 
@@ -804,7 +1051,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     await interaction.reply({
         content: `Ticket berhasil dibuat → <#${thread.id}>`,
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
     });
 
     const openEmbed = new EmbedBuilder()
