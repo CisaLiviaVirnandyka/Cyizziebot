@@ -840,7 +840,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
 ・ Nitro Boost Gift 1 Tahun : 78.000  
 ・ Nitro Boost Gift 1 Tahun : 730.000  
 
-_> Via vilog, garansi mengikuti ketentuan Cyizzie Shop._`
+**NOTE :**
+➤ harga bisa berubah kapanpun, tanyakan stock melalui ticket disini
+➤ [vilog] akun wajib send email, password + backup code (opsional)
+➤ via login = no rush order / spamming`
                 )
                 .setFooter({ text: `Dipilih oleh ${interaction.user.username}` })
                 .setTimestamp();
@@ -856,9 +859,7 @@ _> Via vilog, garansi mengikuti ketentuan Cyizzie Shop._`
 <a:PinkRightArrowBounce:1444894009435881524> Berlaku untuk _all user_ / semua akun  
 <a:PinkRightArrowBounce:1444894009435881524> Akun tidak memiliki subscription aktif  
 <a:PinkRightArrowBounce:1444894009435881524> Wajib dicek terlebih dahulu status bisa / tidak  
-<a:PinkRightArrowBounce:1444894009435881524> Proses via login akun Discord
-
-_> Paket promo hanya tersedia di periode tertentu._`
+<a:PinkRightArrowBounce:1444894009435881524> Proses via login akun Discord`
                 )
                 .setFooter({ text: `Dipilih oleh ${interaction.user.username}` })
                 .setTimestamp();
@@ -869,21 +870,21 @@ _> Paket promo hanya tersedia di periode tertentu._`
                 .setDescription(
 `<a:MyMelodySpin:1444891323596537917> **Dec0rations V!LOG**
 
-With N!tr0 / Without N!tr0 :  
-<:dot:1418119852496912504> 33.000 / 39.500 IDR  <a:PinkRightArrowBounce:1444894009435881524> 24.500 / 29.500 IDR  
-<:dot:1418119852496912504> 39.500 / 65.000 IDR  <a:PinkRightArrowBounce:1444894009435881524> 29.500 / 49.500 IDR  
-<:dot:1418119852496912504> 52.000 / 91.000 IDR  <a:PinkRightArrowBounce:1444894009435881524> 39.999 / 69.500 IDR  
-<:dot:1418119852496912504> 65.000 / 91.000 IDR  <a:PinkRightArrowBounce:1444894009435881524> 49.999 / 69.500 IDR  
-<:dot:1418119852496912504> 71.000 / 100.000 IDR <a:PinkRightArrowBounce:1444894009435881524> 54.999 / 79.500 IDR  
-<:dot:1418119852496912504> 91.000 / 105.000 IDR <a:PinkRightArrowBounce:1444894009435881524> 70.999 / 89.500 IDR  
-<:dot:1418119852496912504> 100.000 / 120.000 IDR <a:PinkRightArrowBounce:1444894009435881524> 79.999 / 107.500 IDR  
+**With N!tr0 / Without N!tr0 :**
+➤ 33.000 / 39.500 IDR <a:PinkRightArrowBounce:1444894009435881524> 24.500 / 29.500 IDR
+➤ 39.500 / 65.000 IDR <a:PinkRightArrowBounce:1444894009435881524> 29.500 / 49.500 IDR
+➤ 52.000 / 91.000 IDR <a:PinkRightArrowBounce:1444894009435881524> 39.999 / 69.500 IDR
+➤ 65.000 / 91.000 IDR <a:PinkRightArrowBounce:1444894009435881524> 49.999 / 69.500 IDR
+➤ 71.000 / 100.000 IDR <a:PinkRightArrowBounce:1444894009435881524> 54.999 / 79.500 IDR
+➤ 91.000 / 105.000 IDR <a:PinkRightArrowBounce:1444894009435881524> 70.999 / 89.500 IDR
+➤ 100.000 / 120.000 IDR <a:PinkRightArrowBounce:1444894009435881524> 79.999 / 107.500 IDR
 
-<a:PinkExclaimBounce:1444893885246734358> **NOTE :**  
-<:dot:1418119852496912504> Legally paid  
-<:dot:1418119852496912504> Ultra High Quality [UHQ]  
-<:dot:1418119852496912504> Fast process  
-<:dot:1418119852496912504> Need email, pass & backup code  
-<:dot:1418119852496912504> Via login`
+<a:PinkExclaimBounce:1444893885246734358> **NOTE :**
+➤ Legally Paid
+➤ Ultra High Quality (UHQ)
+➤ Fast Process
+➤ Need Email, Pass & Backup Code
+➤ Via Login`
                 )
                 .setFooter({ text: `Dipilih oleh ${interaction.user.username}` })
                 .setTimestamp();
@@ -899,11 +900,12 @@ With N!tr0 / Without N!tr0 :
 **3x Server Boost 1 Month (24–30 Day) — 40K**  
 **3x Server Boost 3 Month (80–90 Day) — 50K**  
 
-<:dot:1418119852496912504> proses manual  
-<:dot:1418119852496912504> no rush order  
-<:dot:1418119852496912504> off anti raid  
-<:dot:1418119852496912504> off community features  
-<:dot:1418119852496912504> full warranty kecuali acc di kick / kena revoke wave  
+**NOTE :**
+➤ proses manual  
+➤ no rush order  
+➤ off anti raid  
+➤ off community features  
+➤ full warranty kecuali acc di kick / kena revoke wave
 
 _> Bisa request sekalian setting tampilan server, cukup tulis di ticket._`
                 )
