@@ -835,15 +835,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 .setTitle("<:Nitro_boost:1446372485183307907> Nitro Boost — Pricelist")
                 .setColor(0xFF7FD3)
                 .setDescription(
-`・ Nitro Boost Vilog 1 Bulan : 75.000  
-・ Nitro Boost Vilog 1 Tahun : 700.000  
-・ Nitro Boost Gift 1 Tahun : 78.000  
-・ Nitro Boost Gift 1 Tahun : 730.000  
+`🦢₊˚ Nitro Boost Vilog 1 Bulan : 75.000
+🦢₊˚ Nitro Boost Vilog 1 Tahun : 700.000
+🦢₊˚ Nitro Boost Gift 1 Bulan : 78.000
+🦢₊˚ Nitro Boost Gift 1 Tahun : 730.000
 
 **NOTE :**
-➤ harga bisa berubah kapanpun, tanyakan stock melalui ticket disini
-➤ [vilog] akun wajib send email, password + backup code (opsional)
-➤ via login = no rush order / spamming`
+➺ harga bisa berubah kapanpun, tanyakan stock melalui ticket disini
+➺ [vilog] akun wajib send email, password + backup code (opsional)
+➺ via login = no rush order / spamming`
                 )
                 .setFooter({ text: `Dipilih oleh ${interaction.user.username}` })
                 .setTimestamp();
@@ -852,14 +852,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
                 .setTitle("<:Nitro_boost:1446372485183307907> N!tro Boost Vilog Promotion")
                 .setColor(0xFF9AD9)
                 .setDescription(
-`<a:d_strawberrycake:1433157793782829157> **N!tro Promotion 3 Month [ All User ]**  
+`**N!tro Promotion 3 Month [ All User ]**  
 <a:PinkRightArrowBounce:1444894009435881524> **65.000 IDR**
 
-<:tanda:1281304218732466292> **NOTE**  
-<a:PinkRightArrowBounce:1444894009435881524> Berlaku untuk _all user_ / semua akun  
-<a:PinkRightArrowBounce:1444894009435881524> Akun tidak memiliki subscription aktif  
-<a:PinkRightArrowBounce:1444894009435881524> Wajib dicek terlebih dahulu status bisa / tidak  
-<a:PinkRightArrowBounce:1444894009435881524> Proses via login akun Discord`
+**NOTE**  
+➺ Berlaku untuk _all user_ / semua akun  
+➺ Akun tidak memiliki subscription aktif  
+➺ Wajib dicek terlebih dahulu status bisa / tidak  
+➺ Proses via login akun discord`
                 )
                 .setFooter({ text: `Dipilih oleh ${interaction.user.username}` })
                 .setTimestamp();
@@ -880,11 +880,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 ➤ 100.000 / 120.000 IDR <a:PinkRightArrowBounce:1444894009435881524> 79.999 / 107.500 IDR
 
 <a:PinkExclaimBounce:1444893885246734358> **NOTE :**
-➤ Legally Paid
-➤ Ultra High Quality (UHQ)
-➤ Fast Process
-➤ Need Email, Pass & Backup Code
-➤ Via Login`
+➺ Legally Paid
+➺ Ultra High Quality (UHQ)
+➺ Fast Process
+➺ Need Email, Pass & Backup Code
+➺ Via Login`
                 )
                 .setFooter({ text: `Dipilih oleh ${interaction.user.username}` })
                 .setTimestamp();
@@ -901,11 +901,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 **3x Server Boost 3 Month (80–90 Day) — 50K**  
 
 **NOTE :**
-➤ proses manual  
-➤ no rush order  
-➤ off anti raid  
-➤ off community features  
-➤ full warranty kecuali acc di kick / kena revoke wave
+➺ proses manual  
+➺ no rush order  
+➺ off anti raid  
+➺ off community features  
+➺ full warranty kecuali acc di kick / kena revoke wave
 
 _> Bisa request sekalian setting tampilan server, cukup tulis di ticket._`
                 )
