@@ -53,7 +53,7 @@ const TIMEZONE = "Asia/Jakarta";
 const formatTime = (d) => {
     const dt = new Date(d);
     return dt.toLocaleString("id-ID", {
-        timeZone: TIMEZONE,      // <— ini yang penting
+        timeZone: TIMEZONE,
         day: "2-digit",
         month: "long",
         year: "numeric",
@@ -61,7 +61,6 @@ const formatTime = (d) => {
         minute: "2-digit"
     });
 };
-
 
 // ================== READY + CUSTOM STATUS ================== //
 client.once(Events.ClientReady, () => {
@@ -194,7 +193,6 @@ silakan request melalui ticket dan kami bantu menyesuaikan sesuai kebutuhanmu.
 > buka ticket di <#1443163855042641921> untuk melanjutkan ˖🤍𓇼
 `
             )
-            .setImage("https://cdn.discordapp.com/attachments/977100232972181544/1447492198328172564/IMG_8986.png?ex=6937d1a9&is=69368029&hm=1fd92893c576050370d38fdf33d99531c89b827a175b046f02e3721e7af97582&")
             .setTimestamp();
 
         const menu = new StringSelectMenuBuilder()
@@ -361,7 +359,7 @@ _> Bisa request setting tampilan server sekalian, by request lewat ticket._`,
         const ticketEmbed = new EmbedBuilder()
             .setTitle("🎟️・Open a Ticket")
             .setDescription("Silakan pilih kebutuhan kamu di bawah ini ✨\nPrefer DM allowed / recommended ticket 💌")
-            .setImage("https://cdn.discordapp.com/attachments/977100232972181544/1447492195958526042/IMG_8990.png?ex=6937d1a8&is=69368028&hm=643fc91e9e6f9f0cedd0444793a4e2f8121f85d66825c1a773ae5ccc11ab69a9&")
+            .setImage("https://media.discordapp.net/attachments/977100232972181544/1447492195958526042/IMG_8990.png?ex=6937d1a8&is=69368028&hm=643fc91e9e6f9f0cedd0444793a4e2f8121f85d66825c1a773ae5ccc11ab69a9&=&format=webp&quality=lossless&width=1448&height=815")
             .setColor("#FFC0DC");
 
         const buttons = new ActionRowBuilder().addComponents(
@@ -374,11 +372,11 @@ _> Bisa request setting tampilan server sekalian, by request lewat ticket._`,
     }
 
     // ================== WARRANTY TICKET PANEL (PANEL TERPISAH) ================== //
-if (message.content === "?warrantypanel") {
-    const warrantyEmbed = new EmbedBuilder()
-        .setTitle("🧾・Claim Warranty Ticket")
-        .setColor(0xFEB7D3)
-        .setDescription(`
+    if (message.content === "?warrantypanel") {
+        const warrantyEmbed = new EmbedBuilder()
+            .setTitle("🧾・Claim Warranty Ticket")
+            .setColor(0xFEB7D3)
+            .setDescription(`
 Panel khusus untuk **klaim garansi** layanan di Cyizzie Shop 💗
 
 Sebelum klik tombol, siapkan dulu:
@@ -390,18 +388,18 @@ Sebelum klik tombol, siapkan dulu:
 
 > Garansi mengikuti ketentuan toko, mohon dibaca dulu sesuai snk rules/shop yaa ✨
         `)
-        .setImage("https://cdn.discordapp.com/attachments/977100232972181544/1447492195056746506/IMG_8991.png?ex=6937d1a8&is=69368028&hm=641ecd7fd03d3ac74c2164c39a219f6fefbe105db66dc9cb22200b09932e1b29&");
+            .setImage("https://cdn.discordapp.com/attachments/977100232972181544/1447492195056746506/IMG_8991.png?ex=6937d1a8&is=69368028&hm=641ecd7fd03d3ac74c2164c39a219f6fefbe105db66dc9cb22200b09932e1b29&");
 
-    const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-            .setCustomId("warranty")
-            .setLabel("Claim Warranty")
-            .setStyle(ButtonStyle.Danger)
-            .setEmoji("🧾")
-    );
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId("warranty")
+                .setLabel("Claim Warranty")
+                .setStyle(ButtonStyle.Danger)
+                .setEmoji("🧾")
+        );
 
-    return message.channel.send({ embeds: [warrantyEmbed], components: [row] });
-}
+        return message.channel.send({ embeds: [warrantyEmbed], components: [row] });
+    }
 
     // ================== PANEL PREMIUM APPS (SELECT MENU) ================== //
     if (message.content === "?apppanel") {
@@ -418,8 +416,7 @@ Seluruh layanan bersifat **original, aman, dan nyaman dipakai**, jadi kamu bisa 
 
 Silakan pilih aplikasi di menu bawah yaa ˚₊‧♡
 > “Yuk, pilih dulu aplikasinya di sini ↓”
-`)
-    .setImage("https://cdn.discordapp.com/attachments/977100232972181544/1447492196491067422/IMG_8987.png?ex=6937d1a8&is=69368028&hm=176010f89f743ee36c71bb802b56f2e1db485c9bc8e52420a4286f028df4a8ba&");
+`);
 
         const menu = new StringSelectMenuBuilder()
             .setCustomId("premium_app_select")
@@ -509,7 +506,7 @@ Silakan order ya 🤍
 📩 **Need help or want to buy?**
 ・ *DM / Open Ticket → <#1443163855042641921>*
 `)
-            .setImage("https://cdn.discordapp.com/attachments/977100232972181544/1447492226350317588/IMG_8984.png?ex=6937d1af&is=6936802f&hm=7c3aa3be1b282f557a99fdbf1ef6eb26a0855f0943cb29e9e88b194d27ac57ca&")
+            .setImage("https://media.discordapp.net/attachments/977100232972181544/1447492226350317588/IMG_8984.png?ex=6937d1af&is=6936802f&hm=7c3aa3be1b282f557a99fdbf1ef6eb26a0855f0943cb29e9e88b194d27ac57ca&=&format=webp&quality=lossless&width=1448&height=815")
             .setTimestamp();
 
         await channel.send({ content: "@everyone **SHOP IS NOW OPEN!**", embeds: [openEmbed] });
@@ -563,7 +560,7 @@ Silakan order ya 🤍
 
 >🌙 See you when we open again!
 `)
-            .setImage("https://cdn.discordapp.com/attachments/977100232972181544/1447492225679233124/IMG_8983.png?ex=6937d1af&is=6936802f&hm=9900612faab2eb56aac31fd42ec607781db30d7a8916aa9be7ce4bf1152148ba&")
+            .setImage("https://media.discordapp.net/attachments/977100232972181544/1447492225679233124/IMG_8983.png?ex=6937d1af&is=6936802f&hm=9900612faab2eb56aac31fd42ec607781db30d7a8916aa9be7ce4bf1152148ba&=&format=webp&quality=lossless&width=1448&height=815")
             .setTimestamp();
 
         await channel.send({ content: "@everyone **SHOP IS CLOSED**", embeds: [closeEmbed] });
@@ -1065,7 +1062,7 @@ _> Bisa request sekalian setting tampilan server, cukup tulis di ticket._`
                         .catch(() => null);
                     if (mem) {
                         ticketOwnerMember = mem;
-                        openedByUser = mem.user; // ini yang ditampilkan sebagai "Opened By"
+                        openedByUser = mem.user;
                     }
                 }
             }
@@ -1082,12 +1079,7 @@ _> Bisa request sekalian setting tampilan server, cukup tulis di ticket._`
                 ticketTypeRaw = typeField.value.replace(/`/g, "");
             }
 
-            const typeLabelMap = {
-                buy: "Buy Product",
-                ask: "Ask",
-                custom: "Custom Request"
-            };
-            const ticketType = typeLabelMap[ticketTypeRaw] || ticketTypeRaw;
+            const ticketType = TICKET_TYPE_MAP[ticketTypeRaw] || ticketTypeRaw;
 
             // ========== BUAT TRANSCRIPT TEXT ========== //
             let txt =
@@ -1204,7 +1196,9 @@ Closed At: ${formatTime(closedAt)}
     }
 
     // =============== CREATE TICKET =============== //
-    if (!["buy", "ask", "custom"].includes(interaction.customId)) return;
+    const validTicketIds = Object.keys(TICKET_TYPE_MAP); // ['buy','ask','custom','warranty']
+
+    if (!validTicketIds.includes(interaction.customId)) return;
 
     const ticketBase = guild.channels.cache.get(TICKET_BASE_CHANNEL);
     if (!ticketBase) {
