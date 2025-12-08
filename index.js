@@ -39,10 +39,21 @@ const ANNOUNCE_CHANNEL_ID  = "1437112719412039771";
 const TICKET_BASE_CHANNEL  = "1443163855042641921";
 const STAFF_ROLE_ID        = "902169418962985010";
 
+// mapping biar ticket type rapi di recap
+const TICKET_TYPE_MAP = {
+    buy: "Buy Product",
+    ask: "Ask Question",
+    custom: "Custom Request",
+    warranty: "Warranty Claim"
+};
+
 // ============== UTIL: WAKTU FORMAT ID ================= //
+const TIMEZONE = "Asia/Jakarta";
+
 const formatTime = (d) => {
     const dt = new Date(d);
     return dt.toLocaleString("id-ID", {
+        timeZone: TIMEZONE,      // <— ini yang penting
         day: "2-digit",
         month: "long",
         year: "numeric",
@@ -50,6 +61,7 @@ const formatTime = (d) => {
         minute: "2-digit"
     });
 };
+
 
 // ================== READY + CUSTOM STATUS ================== //
 client.once(Events.ClientReady, () => {
@@ -192,19 +204,19 @@ silakan request melalui ticket dan kami bantu menyesuaikan sesuai kebutuhanmu.
                     label: "Nitro Boost",
                     value: "nitro_boost",
                     description: "Langganan Nitro premium untuk akun Discord kamu.",
-                    emoji: "💎"
+                    emoji: "<:Nitro_boost:1446372485183307907>"
                 },
                 {
                     label: "N!tro Promotion",
                     value: "nitro_promo",
                     description: "Paket promo Nitro 3 bulan untuk semua akun.",
-                    emoji: "🎉"
+                    emoji: "<:Nitro_boost:1446372485183307907>"
                 },
                 {
                     label: "Decoration & Profile Effect",
                     value: "decoration",
                     description: "Avatar decoration & efek profil eksklusif.",
-                    emoji: "🎀"
+                    emoji: "<a:PinkRibbonWhisper:1444892780118671381>"
                 },
                 {
                     label: "Boost Server & Server Tag",
@@ -348,6 +360,7 @@ _> Bisa request setting tampilan server sekalian, by request lewat ticket._`,
         const ticketEmbed = new EmbedBuilder()
             .setTitle("🎟️・Open a Ticket")
             .setDescription("Silakan pilih kebutuhan kamu di bawah ini ✨\nPrefer DM allowed / recommended ticket 💌")
+            .setThumbnail("https://media.discordapp.net/attachments/977100232972181544/1447492195958526042/IMG_8990.png?ex=6937d1a8&is=69368028&hm=643fc91e9e6f9f0cedd0444793a4e2f8121f85d66825c1a773ae5ccc11ab69a9&=&format=webp&quality=lossless&width=1448&height=815")
             .setColor("#FFC0DC");
 
         const buttons = new ActionRowBuilder().addComponents(
@@ -358,6 +371,36 @@ _> Bisa request setting tampilan server sekalian, by request lewat ticket._`,
 
         return message.channel.send({ embeds: [ticketEmbed], components: [buttons] });
     }
+
+    // ================== WARRANTY TICKET PANEL (PANEL TERPISAH) ================== //
+if (message.content === "?warrantypanel") {
+    const warrantyEmbed = new EmbedBuilder()
+        .setTitle("🧾・Claim Warranty Ticket")
+        .setColor(0xFEB7D3)
+        .setDescription(`
+Panel khusus untuk **klaim garansi** layanan di Cyizzie Shop 💗
+
+Sebelum klik tombol, siapkan dulu:
+
+・ Screenshot problem / permasalahan  
+・ Screenshot pas kirim testimoni produk   
+・ Username & ID Discord yang dipakai  
+・ Tanggal pembelian dan jenis produk  
+
+> Garansi mengikuti ketentuan toko, mohon dibaca dulu sesuai snk rules/shop yaa ✨
+        `)
+        .setThumbnail("https://cdn.discordapp.com/attachments/977100232972181544/1447492195056746506/IMG_8991.png?ex=6937d1a8&is=69368028&hm=641ecd7fd03d3ac74c2164c39a219f6fefbe105db66dc9cb22200b09932e1b29&");
+
+    const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId("warranty")
+            .setLabel("Claim Warranty")
+            .setStyle(ButtonStyle.Danger)
+            .setEmoji("🧾")
+    );
+
+    return message.channel.send({ embeds: [warrantyEmbed], components: [row] });
+}
 
     // ================== PANEL PREMIUM APPS (SELECT MENU) ================== //
     if (message.content === "?apppanel") {
@@ -464,6 +507,7 @@ Silakan order ya 🤍
 📩 **Need help or want to buy?**
 ・ *DM / Open Ticket → <#1443163855042641921>*
 `)
+            .setImage("https://media.discordapp.net/attachments/977100232972181544/1447492226350317588/IMG_8984.png?ex=6937d1af&is=6936802f&hm=7c3aa3be1b282f557a99fdbf1ef6eb26a0855f0943cb29e9e88b194d27ac57ca&=&format=webp&quality=lossless&width=1448&height=815")
             .setTimestamp();
 
         await channel.send({ content: "@everyone **SHOP IS NOW OPEN!**", embeds: [openEmbed] });
@@ -517,6 +561,7 @@ Silakan order ya 🤍
 
 >🌙 See you when we open again!
 `)
+            .setImage("https://media.discordapp.net/attachments/977100232972181544/1447492225679233124/IMG_8983.png?ex=6937d1af&is=6936802f&hm=9900612faab2eb56aac31fd42ec607781db30d7a8916aa9be7ce4bf1152148ba&=&format=webp&quality=lossless&width=1448&height=815")
             .setTimestamp();
 
         await channel.send({ content: "@everyone **SHOP IS CLOSED**", embeds: [closeEmbed] });
@@ -996,41 +1041,57 @@ _> Bisa request sekalian setting tampilan server, cukup tulis di ticket._`
                 (a, b) => a.createdTimestamp - b.createdTimestamp
             );
 
-            const openedMsg = sorted[0];
-            let openedBy = openedMsg?.author;
-            let ticketOwnerMember = null;
+            // cari message "Ticket Created" dari bot
+            const ticketOpenMsg =
+                sorted.find(
+                    (m) =>
+                        m.author.id === client.user.id &&
+                        m.embeds.length &&
+                        m.embeds[0].title === "🎟️ Ticket Created"
+                ) || sorted[0];
 
-            // cari user dari mention pertama di message open ticket
-            if (openedMsg && openedMsg.content) {
-                const match = openedMsg.content.match(/<@(\d+)>/);
+            let ticketOwnerMember = null;
+            let openedByUser = ticketOpenMsg.author;
+            let openedAt = ticketOpenMsg.createdTimestamp;
+
+            // ambil user yang di-mention di content (pemilik ticket)
+            if (ticketOpenMsg && ticketOpenMsg.content) {
+                const match = ticketOpenMsg.content.match(/<@(\d+)>/);
                 if (match) {
-                    ticketOwnerMember = await thread.guild.members
+                    const mem = await thread.guild.members
                         .fetch(match[1])
                         .catch(() => null);
+                    if (mem) {
+                        ticketOwnerMember = mem;
+                        openedByUser = mem.user; // ini yang ditampilkan sebagai "Opened By"
+                    }
                 }
             }
-            if (ticketOwnerMember) openedBy = ticketOwnerMember.user;
 
-            const openedAt = openedMsg ? openedMsg.createdTimestamp : Date.now();
             const closedAt = Date.now();
 
-            // ambil ticket type dari embed awal kalau ada
-            let ticketType = thread.name;
-            if (openedMsg?.embeds?.length) {
-                const firstEmbed = openedMsg.embeds[0];
-                const typeField = firstEmbed.fields?.find(
-                    (f) => f.name === "Ticket Type"
-                );
-                if (typeField && typeField.value) {
-                    ticketType = typeField.value.replace(/`/g, "");
-                }
+            // ambil ticket type dari field embed
+            let ticketTypeRaw = thread.name;
+            const firstEmbed = ticketOpenMsg.embeds[0];
+            const typeField = firstEmbed?.fields?.find(
+                (f) => f.name === "Ticket Type"
+            );
+            if (typeField && typeField.value) {
+                ticketTypeRaw = typeField.value.replace(/`/g, "");
             }
+
+            const typeLabelMap = {
+                buy: "Buy Product",
+                ask: "Ask",
+                custom: "Custom Request"
+            };
+            const ticketType = typeLabelMap[ticketTypeRaw] || ticketTypeRaw;
 
             // ========== BUAT TRANSCRIPT TEXT ========== //
             let txt =
 `Ticket Transcript — ${thread.name}
 Ticket ID: ${thread.id}
-Opened By: ${openedBy?.tag || "Unknown"} (${openedBy?.id || "N/A"})
+Opened By: ${openedByUser.tag} (${openedByUser.id})
 Opened At: ${formatTime(openedAt)}
 Closed By: ${user.tag} (${user.id})
 Closed At: ${formatTime(closedAt)}
@@ -1038,7 +1099,7 @@ Closed At: ${formatTime(closedAt)}
 `;
 
             for (const m of sorted) {
-                const time = new Date(m.createdTimestamp).toLocaleString("id-ID");
+                const time = formatTime(m.createdTimestamp);
                 const content = m.content || "[embed/attachment]";
                 txt += `[${time}] ${m.author.tag}: ${content}\n`;
             }
@@ -1055,13 +1116,13 @@ Closed At: ${formatTime(closedAt)}
                 .setDescription("Ticket kamu sudah ditutup & transcript berhasil dibuat 💗")
                 .addFields(
                     {
-                        name: "🔢 Ticket ID",
+                        name: "1️⃣2️⃣3️⃣4️⃣ Ticket ID",
                         value: thread.id,
                         inline: false
                     },
                     {
                         name: "🎂 Opened By",
-                        value: openedBy ? `<@${openedBy.id}>` : "Unknown",
+                        value: `<@${openedByUser.id}>`,
                         inline: true
                     },
                     {
@@ -1081,7 +1142,7 @@ Closed At: ${formatTime(closedAt)}
                     },
                     {
                         name: "📦 Ticket Type",
-                        value: ticketType || "-",
+                        value: ticketType,
                         inline: false
                     }
                 )
@@ -1195,6 +1256,18 @@ Closed At: ${formatTime(closedAt)}
         embeds: [openEmbed],
         components: [closeBtn]
     });
+
+    // Hapus system message "started a thread" di channel ticket base
+    setTimeout(async () => {
+        try {
+            const msgs = await ticketBase.messages.fetch({ limit: 5 });
+            msgs
+                .filter(m => m.type === 21 || m.type === 18)
+                .forEach(m => m.delete().catch(() => {}));
+        } catch (e) {
+            console.error("Gagal hapus system message thread:", e);
+        }
+    }, 500);
 });
 
 // ================== LOGIN ================== //
