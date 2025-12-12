@@ -1,4 +1,5 @@
 // ================== SETUP & IMPORT ================== //
+const { joinVoiceChannel } = require("@discordjs/voice");
 require("dotenv").config();
 const {
     Client,
@@ -130,6 +131,32 @@ client.on(Events.MessageCreate, async (message) => {
     // simple reply
     if (message.content === "halo") return message.reply("haii aku assistant cyizzie 🤍");
     if (message.content === "?ping") return message.reply(`pong! delay: ${client.ws.ping}ms`);
+
+        // ================== VOICE JOIN SIMPLE ================== //
+    if (message.content === "?joinvc") {
+        const voiceChannel = message.member?.voice?.channel;
+
+        if (!voiceChannel) {
+            return message.reply("kamu belum ada di voice channel mana pun 😿");
+        }
+
+        joinVoiceChannel({
+            channelId: voiceChannel.id,
+            guildId: voiceChannel.guild.id,
+            adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+            selfDeaf: false,  // true kalau mau bot auto deaf
+            selfMute: false,  // true kalau mau bot auto mute
+        });
+
+        return message.reply(`aku udah masuk ke voice **${voiceChannel.name}** 🎧`);
+    }
+
+    // (opsional) keluar dari voice
+    if (message.content === "?leavevc") {
+        const voiceConnection = client.voice?.adapters?.get(message.guild.id);
+        // cara simple: suruh user disconnect lewat menu, karena di sini kita cuma fokus join
+        return message.reply("kalau mau keluarin aku, bisa disconnect lewat menu voice yaa 💗");
+    }
 
     // test welcome
     if (message.content === "!testwelcome") {
@@ -1140,7 +1167,7 @@ Closed At: ${formatTime(closedAt)}
                         inline: false
                     }
                 )
-                .setFooter({ text: "Cyizzie Shop • Soft Pink Aesthetic ♡" })
+                .setFooter({ text: "Cyizzie Shop ♡" })
                 .setTimestamp();
 
             const row = new ActionRowBuilder().addComponents(
