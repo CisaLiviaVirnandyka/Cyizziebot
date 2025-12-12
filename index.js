@@ -1,5 +1,5 @@
 // ================== SETUP & IMPORT ================== //
-const { joinVoiceChannel } = require("@discordjs/voice");
+const { joinVoiceChannel, createAudioPlayer, NoSubscriberBehavior } = require("@discordjs/voice");
 require("dotenv").config();
 const {
     Client,
@@ -157,6 +157,23 @@ client.on(Events.MessageCreate, async (message) => {
         // cara simple: suruh user disconnect lewat menu, karena di sini kita cuma fokus join
         return message.reply("kalau mau keluarin aku, bisa disconnect lewat menu voice yaa 💗");
     }
+
+    const connection = joinVoiceChannel({
+    channelId: voiceChannel.id,
+    guildId: voiceChannel.guild.id,
+    adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+    selfDeaf: false,
+    selfMute: false,
+});
+
+// Biar tidak auto disconnect
+const player = createAudioPlayer({
+    behaviors: {
+        noSubscriber: NoSubscriberBehavior.Play,
+    },
+});
+
+connection.subscribe(player);
 
     // test welcome
     if (message.content === "!testwelcome") {
