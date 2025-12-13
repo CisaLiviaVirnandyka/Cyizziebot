@@ -1,5 +1,10 @@
 // ================== SETUP & IMPORT ================== //
-const { joinVoiceChannel, createAudioPlayer, NoSubscriberBehavior } = require("@discordjs/voice");
+const {
+    joinVoiceChannel,
+    createAudioPlayer,
+    NoSubscriberBehavior,
+    getVoiceConnection
+} = require("@discordjs/voice");
 require("dotenv").config();
 const {
     Client,
@@ -132,7 +137,7 @@ client.on(Events.MessageCreate, async (message) => {
     if (message.content === "halo") return message.reply("haii aku assistant cyizzie 🤍");
     if (message.content === "?ping") return message.reply(`pong! delay: ${client.ws.ping}ms`);
 
-        // ================== VOICE JOIN SIMPLE ================== //
+    // ================== VOICE JOIN SIMPLE ================== //
     if (message.content === "?joinvc") {
         const voiceChannel = message.member?.voice?.channel;
 
@@ -140,40 +145,52 @@ client.on(Events.MessageCreate, async (message) => {
             return message.reply("kamu belum ada di voice channel mana pun 😿");
         }
 
-        joinVoiceChannel({
+        // kalau sudah ada koneksi lama di guild ini, destroy dulu biar bersih
+        const existing = getVoiceConnection(message.guild.id);
+        if (existing) {
+            existing.destroy();
+        }
+
+        const connection = joinVoiceChannel({
             channelId: voiceChannel.id,
             guildId: voiceChannel.guild.id,
             adapterCreator: voiceChannel.guild.voiceAdapterCreator,
-            selfDeaf: false,  // true kalau mau bot auto deaf
-            selfMute: false,  // true kalau mau bot auto mute
+            selfDeaf: false,
+            selfMute: false,
+        });
+
+        // player dummy biar koneksi stabil
+        const player = createAudioPlayer({
+            behaviors: {
+                noSubscriber: NoSubscriberBehavior.Play,
+            },
+        });
+        connection.subscribe(player);
+
+        connection.on("stateChange", (oldState, newState) => {
+            console.log(
+                `Voice state ${message.guild.name}: ${oldState.status} -> ${newState.status}`
+            );
+        });
+
+        connection.on("error", (err) => {
+            console.error("Voice connection error:", err);
         });
 
         return message.reply(`aku udah masuk ke voice **${voiceChannel.name}** 🎧`);
     }
 
-    // (opsional) keluar dari voice
+    // ================== VOICE LEAVE SIMPLE ================== //
     if (message.content === "?leavevc") {
-        const voiceConnection = client.voice?.adapters?.get(message.guild.id);
-        // cara simple: suruh user disconnect lewat menu, karena di sini kita cuma fokus join
-        return message.reply("kalau mau keluarin aku, bisa disconnect lewat menu voice yaa 💗");
+        const connection = getVoiceConnection(message.guild.id);
+
+        if (!connection) {
+            return message.reply("aku lagi nggak ada di voice mana-mana kok 🐾");
+        }
+
+        connection.destroy();
+        return message.reply("oke, aku udah keluar dari voice yaa 💗");
     }
-
-    const connection = joinVoiceChannel({
-    channelId: voiceChannel.id,
-    guildId: voiceChannel.guild.id,
-    adapterCreator: voiceChannel.guild.voiceAdapterCreator,
-    selfDeaf: false,
-    selfMute: false,
-});
-
-// Biar tidak auto disconnect
-const player = createAudioPlayer({
-    behaviors: {
-        noSubscriber: NoSubscriberBehavior.Play,
-    },
-});
-
-connection.subscribe(player);
 
     // test welcome
     if (message.content === "!testwelcome") {
