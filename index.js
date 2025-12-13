@@ -1,11 +1,19 @@
 // ================== SETUP & IMPORT ================== //
+require("dotenv").config();
+
+const { Readable } = require("stream");
 const {
     joinVoiceChannel,
+    getVoiceConnection,
     createAudioPlayer,
+    createAudioResource,
     NoSubscriberBehavior,
-    getVoiceConnection
+    StreamType,
+    AudioPlayerStatus,
+    VoiceConnectionStatus,
+    entersState
 } = require("@discordjs/voice");
-require("dotenv").config();
+
 const {
     Client,
     GatewayIntentBits,
@@ -34,9 +42,7 @@ const client = new Client({
 
 // ================== GLOBAL ERROR HANDLER ================== //
 client.on("error", (err) => console.error("Client error:", err));
-process.on("unhandledRejection", (reason) =>
-    console.error("Unhandled Rejection:", reason)
-);
+process.on("unhandledRejection", (reason) => console.error("Unhandled Rejection:", reason));
 
 // ================== CONFIG ID ================== //
 const WELCOME_CHANNEL_ID   = "862261084697264149";
@@ -55,7 +61,6 @@ const TICKET_TYPE_MAP = {
 
 // ============== UTIL: WAKTU FORMAT ID ================= //
 const TIMEZONE = "Asia/Jakarta";
-
 const formatTime = (d) => {
     const dt = new Date(d);
     return dt.toLocaleString("id-ID", {
@@ -67,6 +72,24 @@ const formatTime = (d) => {
         minute: "2-digit"
     });
 };
+
+// ================== VOICE: SILENCE KEEPALIVE (ANTI AUTO KICK) ================== //
+const SILENCE_FRAME = Buffer.from([0xF8, 0xFF, 0xFE]);
+
+function createSilenceResource() {
+    const stream = new Readable({
+        read() {
+            this.push(SILENCE_FRAME);
+        }
+    });
+    return createAudioResource(stream, { inputType: StreamType.Opus });
+}
+
+function startKeepAlive(player) {
+    const playSilence = () => player.play(createSilenceResource());
+    playSilence();
+    player.on(AudioPlayerStatus.Idle, playSilence);
+}
 
 // ================== READY + CUSTOM STATUS ================== //
 client.once(Events.ClientReady, () => {
@@ -137,18 +160,15 @@ client.on(Events.MessageCreate, async (message) => {
     if (message.content === "halo") return message.reply("haii aku assistant cyizzie 🤍");
     if (message.content === "?ping") return message.reply(`pong! delay: ${client.ws.ping}ms`);
 
-    // ================== VOICE JOIN SIMPLE ================== //
+    // ================== VOICE: JOIN & STAY ================== //
     if (message.content === "?joinvc") {
         const voiceChannel = message.member?.voice?.channel;
+        if (!voiceChannel) return message.reply("kamu belum ada di voice channel mana pun 😿");
 
-        if (!voiceChannel) {
-            return message.reply("kamu belum ada di voice channel mana pun 😿");
-        }
-
-        // kalau sudah ada koneksi lama di guild ini, destroy dulu biar bersih
-        const existing = getVoiceConnection(message.guild.id);
-        if (existing) {
-            existing.destroy();
+        // bersihin koneksi lama biar ga numpuk
+        const old = getVoiceConnection(message.guild.id);
+        if (old) {
+            try { old.destroy(); } catch {}
         }
 
         const connection = joinVoiceChannel({
@@ -156,39 +176,52 @@ client.on(Events.MessageCreate, async (message) => {
             guildId: voiceChannel.guild.id,
             adapterCreator: voiceChannel.guild.voiceAdapterCreator,
             selfDeaf: false,
-            selfMute: false,
+            selfMute: false
         });
 
-        // player dummy biar koneksi stabil
-        const player = createAudioPlayer({
-            behaviors: {
-                noSubscriber: NoSubscriberBehavior.Play,
-            },
-        });
-        connection.subscribe(player);
-
-        connection.on("stateChange", (oldState, newState) => {
-            console.log(
-                `Voice state ${message.guild.name}: ${oldState.status} -> ${newState.status}`
-            );
-        });
-
-        connection.on("error", (err) => {
-            console.error("Voice connection error:", err);
-        });
-
-        return message.reply(`aku udah masuk ke voice **${voiceChannel.name}** 🎧`);
-    }
-
-    // ================== VOICE LEAVE SIMPLE ================== //
-    if (message.content === "?leavevc") {
-        const connection = getVoiceConnection(message.guild.id);
-
-        if (!connection) {
-            return message.reply("aku lagi nggak ada di voice mana-mana kok 🐾");
+        // tunggu sampai ready
+        try {
+            await entersState(connection, VoiceConnectionStatus.Ready, 15_000);
+        } catch (e) {
+            try { connection.destroy(); } catch {}
+            return message.reply("gagal connect ke voice 😿 coba lagi yaa");
         }
 
-        connection.destroy();
+        const player = createAudioPlayer({
+            behaviors: { noSubscriber: NoSubscriberBehavior.Play }
+        });
+
+        connection.subscribe(player);
+        startKeepAlive(player);
+
+        connection.on("stateChange", (oldState, newState) => {
+            console.log(`Voice state ${message.guild.name}: ${oldState.status} -> ${newState.status}`);
+        });
+
+        // auto recover kalau disconnected
+        connection.on(VoiceConnectionStatus.Disconnected, async () => {
+            try {
+                await Promise.race([
+                    entersState(connection, VoiceConnectionStatus.Signalling, 5_000),
+                    entersState(connection, VoiceConnectionStatus.Connecting, 5_000)
+                ]);
+                startKeepAlive(player);
+            } catch {
+                try { connection.destroy(); } catch {}
+            }
+        });
+
+        connection.on("error", (err) => console.error("Voice connection error:", err));
+        player.on("error", (err) => console.error("Voice player error:", err));
+
+        return message.reply(`aku udah masuk & stay di voice **${voiceChannel.name}** 🎧`);
+    }
+
+    // ================== VOICE: LEAVE ================== //
+    if (message.content === "?leavevc") {
+        const connection = getVoiceConnection(message.guild.id);
+        if (!connection) return message.reply("aku lagi nggak ada di voice mana-mana kok 🐾");
+        try { connection.destroy(); } catch {}
         return message.reply("oke, aku udah keluar dari voice yaa 💗");
     }
 
